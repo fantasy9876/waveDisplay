@@ -23,8 +23,8 @@ namespace WaveDisplay
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            
-            waveIn.waveExtract("d.wav");
+
+            waveIn.waveExtract("res\\d.wav");
             waveIn.DrawAudio(waveIn.leftData, pictureBox1);
             waveZoom = new WaveIn(waveIn);
             currentLevel = waveZoom.leftData.Count;
