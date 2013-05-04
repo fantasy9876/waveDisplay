@@ -75,42 +75,42 @@
             // 
             // levelScrollBar
             // 
-            this.levelScrollBar.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.levelScrollBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.levelScrollBar.LargeChange = 1;
             this.levelScrollBar.Location = new System.Drawing.Point(0, 758);
             this.levelScrollBar.Maximum = 0;
             this.levelScrollBar.Name = "levelScrollBar";
-            this.levelScrollBar.Size = new System.Drawing.Size(1276, 24);
+            this.levelScrollBar.Size = new System.Drawing.Size(1169, 24);
             this.levelScrollBar.TabIndex = 2;
             this.levelScrollBar.Scroll += new System.Windows.Forms.ScrollEventHandler(this.levelScrollBar_Scroll);
             // 
             // zoomIn
             // 
-            this.zoomIn.Location = new System.Drawing.Point(267, 0);
+            this.zoomIn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.zoomIn.Location = new System.Drawing.Point(1172, 757);
             this.zoomIn.Name = "zoomIn";
-            this.zoomIn.Size = new System.Drawing.Size(47, 24);
+            this.zoomIn.Size = new System.Drawing.Size(42, 24);
             this.zoomIn.TabIndex = 3;
             this.zoomIn.Text = "+";
             this.zoomIn.UseVisualStyleBackColor = true;
-            this.zoomIn.Visible = false;
             this.zoomIn.Click += new System.EventHandler(this.zoomIn_Click);
             // 
             // zoomOut
             // 
-            this.zoomOut.Location = new System.Drawing.Point(320, 0);
+            this.zoomOut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.zoomOut.Location = new System.Drawing.Point(1220, 757);
             this.zoomOut.Name = "zoomOut";
             this.zoomOut.Size = new System.Drawing.Size(43, 24);
             this.zoomOut.TabIndex = 4;
             this.zoomOut.Text = "-";
             this.zoomOut.UseVisualStyleBackColor = true;
-            this.zoomOut.Visible = false;
             this.zoomOut.Click += new System.EventHandler(this.zoomOut_Click);
             // 
             // tabControl1
             // 
+            this.tabControl1.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
