@@ -23,8 +23,13 @@ namespace WaveDisplay
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-
-            waveIn.waveExtract("res\\d.wav");
+            OpenFD.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            OpenFD.FileName = "";
+            OpenFD.Filter = "PCM wave File|*.wav";
+            OpenFD.ShowDialog();
+            string chosenFile = "";
+            chosenFile= OpenFD.FileName;
+            waveIn.waveExtract(chosenFile);
             waveIn.DrawAudio(waveIn.leftData, pictureBox1);
             waveZoom = new WaveIn(waveIn);
             currentLevel = waveZoom.leftData.Count;
@@ -198,7 +203,7 @@ namespace WaveDisplay
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.Black);
-                if (inputValues.Count >= 15000)
+                if (inputValues.Count >= 20000)
                 {
                     List<short> inputNomalized = new List<short>();
                     inputNomalized = waveNormalize(inputValues, width, height);
