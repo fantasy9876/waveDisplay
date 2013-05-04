@@ -69,7 +69,7 @@
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
@@ -92,6 +92,7 @@
             this.zoomIn.TabIndex = 3;
             this.zoomIn.Text = "+";
             this.zoomIn.UseVisualStyleBackColor = true;
+            this.zoomIn.Visible = false;
             this.zoomIn.Click += new System.EventHandler(this.zoomIn_Click);
             // 
             // zoomOut
@@ -102,6 +103,7 @@
             this.zoomOut.TabIndex = 4;
             this.zoomOut.Text = "-";
             this.zoomOut.UseVisualStyleBackColor = true;
+            this.zoomOut.Visible = false;
             this.zoomOut.Click += new System.EventHandler(this.zoomOut_Click);
             // 
             // tabControl1
@@ -134,6 +136,7 @@
             this.pictureBox1.Size = new System.Drawing.Size(1262, 702);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
+            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // tabPage2
             // 

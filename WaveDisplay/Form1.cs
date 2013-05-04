@@ -15,7 +15,37 @@ namespace WaveDisplay
         public Form1()
         {
             InitializeComponent();
+            pictureBox1.MouseWheel += new MouseEventHandler(pictureBox1_MouseWheel);
+            pictureBox1.MouseHover += new EventHandler(pictureBox1_MouseHover);
+            pictureBox1.MouseLeave += new EventHandler(pictureBox1_MouseLeave);
             
+        }
+
+        void pictureBox1_MouseLeave(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+            this.ActiveControl = null;
+        }
+
+        void pictureBox1_MouseHover(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+            pictureBox1.Focus();
+        }
+
+     
+        private void pictureBox1_MouseWheel(object sender, MouseEventArgs e)
+        {
+           if (e.Delta > 0)
+           {
+               //zoomIn.PerformClick();
+               zoomIn_Click(sender, e); // faster than the method above
+           }
+            else
+           {
+               //zoomOut.PerformClick();
+               zoomOut_Click(sender, e); //faster than the method above
+           }   
         }
         public static WaveIn waveIn = new WaveIn();
         public static WaveIn waveZoom;
@@ -108,6 +138,11 @@ namespace WaveDisplay
         }
 
         private void Form1_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
         {
 
         }
