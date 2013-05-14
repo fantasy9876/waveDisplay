@@ -7,6 +7,8 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using NAudio.Dsp;
+using NAudio.Wave;
 
 namespace WaveDisplay
 {
@@ -95,7 +97,6 @@ namespace WaveDisplay
             else
             {
                 currentLevel = tempLevel;
-                MessageBox.Show("Can't zoom in!");
             }
         }
 
@@ -124,7 +125,6 @@ namespace WaveDisplay
             else
             {
                 currentLevel = waveIn.leftData.Count;
-                MessageBox.Show("Can't zoom out!");
             }
                
             
@@ -187,7 +187,6 @@ namespace WaveDisplay
                 {
                     using (BinaryReader br = new BinaryReader(wave_fs))
                     {
-
                         wavHeader.riffID = br.ReadBytes(4);
                         tmpByte = br.ReadBytes(4);
                         wavHeader.fileFormat = br.ReadBytes(4);
@@ -257,7 +256,7 @@ namespace WaveDisplay
                         float x = (float)(i * 1.0 * width / inputValues.Count);
                         float y = (float)height / 2 + inputValues[i] * height / (1 << 16);
                         PointF next = new PointF(x, y);
-                        g.DrawLine(new Pen(Color.Blue), previous, next);
+                        g.DrawLine(new Pen(Color.Green), previous, next);
                         if (inputValues.Count <= 500)
                         {
                             sizef = new SizeF(2, 2);
