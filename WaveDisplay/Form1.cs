@@ -7,8 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
-using NAudio.Dsp;
-using NAudio.Wave;
 
 namespace WaveDisplay
 {
@@ -288,7 +286,97 @@ namespace WaveDisplay
             }
             return outputValues;
         }
+        public List<List<float>> STFT(List<short> inputValues, short No)
+        {
+            int i, overLap = No / 2;
+            List<List<float>> stftChunks = new List<List<float>>();
+            List<float> fftChunk = new List<float>();
+            int count= inputValues.Count;
+            for (i = 0; i + No < count;i +=overLap)
+            {
+                fftChunk =FFT( inputValues.GetRange(i, No));
+                stftChunks.Add(fftChunk);
+            }
+            fftChunk = FFT(inputValues.GetRange(count - No, No));
+            stftChunks.Add(fftChunk);
+            return stftChunks;
 
+        }
+        public List<float> FFT(List<short> inputValues)
+        {
+            int N = inputValues.Count; //assume N =2^n
+            int n = (int)(Math.Log(N) / Math.Log(2));
+            int i;
+            List<float> Real = inputValues.Cast<float>().ToList();
+            List<float> Imagine = new List<float>();
+            for(i=0;i<Imagine.Count;i++)
+            {
+                Imagine.Add(0.0f);
+            }
+            float Re,Im;
+            //do bit reversal
+            int k,j = 0;
+            for (i = 0; i < N - 1; i++)
+            {
+                if (i < j)
+                {
+                    Re = Real[i];
+                    Im = Imagine[i];
+                    Real[i] = Real[j];
+                    Imagine[i] = Imagine[j];
+                    Real[j] = Re;
+                    Imagine[j] = Im;
+                }
+                k = N / 2;
+                while (k <= j)
+                {
+                    j -= k;
+                    k /= 2;
+                }
+                j += k;
+            }
+
+            //compute FFT
+            int m, b,x,a = 1;
+            float t1, t2;
+            float coef1=-1.0f;
+            float coef2=0.0f;
+            for (m = 0; m < n; m++)
+            {
+                b = a;
+                a *= 2;
+                float c= 1.0f;//value of cos(2pi/N), N is large
+                          //so this value reach to 1
+                float s=0.0f; //value of sin(2pi/N) reach to 0 when
+                          //N is large
+                //loop as decimation in Time
+                for (j = 0; j < b; j++)
+                {
+                    for (i = j; i < n; i += a)
+                    {
+                        x = i + b;
+                        t1 = c * Real[x] - s * Imagine[x];
+                        t2 = c * Imagine[x] + s * Real[x];
+                        Real[x] = Real[i] - t1;
+                        Imagine[x] = Imagine[i] - t2;
+                        Real[i] += t1;
+                        Imagine[i] += t2;
+                    }
+                    c = c*coef1-s*coef2;
+                    s = c * coef2 + s * coef1;                    
+                }
+                coef2 = (float)-Math.Sqrt((1.0f - coef1) / 2.0f);
+                coef1 = (float)Math.Sqrt((1.0f + coef1) / 2.0f);
+            }
+            List<float> output=new List<float>();
+            float outputMag;
+            for (i = 0; i < N / 2; i++)
+            {
+                outputMag=(float)Math.Sqrt(Math.Pow(Real[i],2)+Math.Pow(Imagine[i],2));
+                output.Add(outputMag);
+            }
+            return output;
+        }
     }
 
 }
