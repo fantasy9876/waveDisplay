@@ -32,12 +32,13 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.levelScrollBar = new System.Windows.Forms.HScrollBar();
-            this.zoomIn = new System.Windows.Forms.Button();
-            this.zoomOut = new System.Windows.Forms.Button();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
+            this.VZoom_out = new System.Windows.Forms.Button();
+            this.VZoom_in = new System.Windows.Forms.Button();
+            this.vScrollBar1 = new System.Windows.Forms.VScrollBar();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.OpenFD = new System.Windows.Forms.OpenFileDialog();
             this.menuStrip1.SuspendLayout();
@@ -84,38 +85,17 @@
             this.levelScrollBar.TabIndex = 2;
             this.levelScrollBar.Scroll += new System.Windows.Forms.ScrollEventHandler(this.levelScrollBar_Scroll);
             // 
-            // zoomIn
-            // 
-            this.zoomIn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.zoomIn.Location = new System.Drawing.Point(1172, 757);
-            this.zoomIn.Name = "zoomIn";
-            this.zoomIn.Size = new System.Drawing.Size(42, 24);
-            this.zoomIn.TabIndex = 3;
-            this.zoomIn.Text = "+";
-            this.zoomIn.UseVisualStyleBackColor = true;
-            this.zoomIn.Click += new System.EventHandler(this.zoomIn_Click);
-            // 
-            // zoomOut
-            // 
-            this.zoomOut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.zoomOut.Location = new System.Drawing.Point(1220, 757);
-            this.zoomOut.Name = "zoomOut";
-            this.zoomOut.Size = new System.Drawing.Size(43, 24);
-            this.zoomOut.TabIndex = 4;
-            this.zoomOut.Text = "-";
-            this.zoomOut.UseVisualStyleBackColor = true;
-            this.zoomOut.Click += new System.EventHandler(this.zoomOut_Click);
-            // 
             // tabControl1
             // 
             this.tabControl1.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(0, 24);
+            this.tabControl1.Location = new System.Drawing.Point(0, 21);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(1276, 734);
             this.tabControl1.TabIndex = 5;
+            this.tabControl1.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControl1_Selected);
             // 
             // tabPage1
             // 
@@ -136,10 +116,12 @@
             this.pictureBox1.Size = new System.Drawing.Size(1262, 702);
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
-            this.pictureBox1.Click += new System.EventHandler(this.pictureBox1_Click);
             // 
             // tabPage2
             // 
+            this.tabPage2.Controls.Add(this.VZoom_out);
+            this.tabPage2.Controls.Add(this.VZoom_in);
+            this.tabPage2.Controls.Add(this.vScrollBar1);
             this.tabPage2.Controls.Add(this.pictureBox2);
             this.tabPage2.Location = new System.Drawing.Point(4, 22);
             this.tabPage2.Name = "tabPage2";
@@ -149,12 +131,38 @@
             this.tabPage2.Text = "tabPage2";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
+            // VZoom_out
+            // 
+            this.VZoom_out.Location = new System.Drawing.Point(1243, 43);
+            this.VZoom_out.Name = "VZoom_out";
+            this.VZoom_out.Size = new System.Drawing.Size(21, 42);
+            this.VZoom_out.TabIndex = 3;
+            this.VZoom_out.Text = "-";
+            this.VZoom_out.UseVisualStyleBackColor = true;
+            this.VZoom_out.Click += new System.EventHandler(this.VZoom_out_Click);
+            // 
+            // VZoom_in
+            // 
+            this.VZoom_in.Location = new System.Drawing.Point(1243, 0);
+            this.VZoom_in.Name = "VZoom_in";
+            this.VZoom_in.Size = new System.Drawing.Size(22, 37);
+            this.VZoom_in.TabIndex = 2;
+            this.VZoom_in.Text = "+";
+            this.VZoom_in.UseVisualStyleBackColor = true;
+            this.VZoom_in.Click += new System.EventHandler(this.VZoom_in_Click);
+            // 
+            // vScrollBar1
+            // 
+            this.vScrollBar1.Location = new System.Drawing.Point(1243, 88);
+            this.vScrollBar1.Name = "vScrollBar1";
+            this.vScrollBar1.Size = new System.Drawing.Size(22, 617);
+            this.vScrollBar1.TabIndex = 1;
+            // 
             // pictureBox2
             // 
-            this.pictureBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox2.Location = new System.Drawing.Point(3, 3);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(1262, 702);
+            this.pictureBox2.Size = new System.Drawing.Size(1237, 702);
             this.pictureBox2.TabIndex = 0;
             this.pictureBox2.TabStop = false;
             // 
@@ -168,8 +176,6 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1276, 782);
             this.Controls.Add(this.tabControl1);
-            this.Controls.Add(this.zoomOut);
-            this.Controls.Add(this.zoomIn);
             this.Controls.Add(this.levelScrollBar);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
@@ -194,14 +200,15 @@
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.HScrollBar levelScrollBar;
-        private System.Windows.Forms.Button zoomIn;
-        private System.Windows.Forms.Button zoomOut;
         private System.Windows.Forms.TabControl tabControl1;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.OpenFileDialog OpenFD;
+        private System.Windows.Forms.Button VZoom_out;
+        private System.Windows.Forms.Button VZoom_in;
+        private System.Windows.Forms.VScrollBar vScrollBar1;
     }
 }
 

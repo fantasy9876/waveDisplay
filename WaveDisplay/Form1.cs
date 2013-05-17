@@ -12,12 +12,22 @@ namespace WaveDisplay
 {
     public partial class Form1 : Form
     {
+        public static WaveIn waveIn = new WaveIn();
+        public static WaveIn waveZoom;
+        public static int CurWavCount;
+        public static int CurSpectrCount;
+        public static int CurVerCount;
+        public string chosenFile = "";
+
         public Form1()
         {
             InitializeComponent();
             pictureBox1.MouseWheel += new MouseEventHandler(pictureBox1_MouseWheel);
             pictureBox1.MouseHover += new EventHandler(pictureBox1_MouseHover);
             pictureBox1.MouseLeave += new EventHandler(pictureBox1_MouseLeave);
+            pictureBox2.MouseWheel += new MouseEventHandler(pictureBox2_MouseWheel);
+            pictureBox2.MouseHover += new EventHandler(pictureBox2_MouseHover);
+            pictureBox2.MouseLeave += new EventHandler(pictureBox2_MouseLeave);
             
         }
 
@@ -38,18 +48,107 @@ namespace WaveDisplay
         {
            if (e.Delta > 0)
            {
-               //zoomIn.PerformClick();
-               zoomIn_Click(sender, e); // faster than the method above
+               int tempCount = CurWavCount;
+               int tempIdx1;
+               if (CurWavCount > 20000)
+                   CurWavCount -= 10000;
+               else if (CurWavCount <= 20000 && CurWavCount > 1000)
+                   CurWavCount -= 500;
+               else if (CurWavCount <= 1000 && CurWavCount > 500)
+                   CurWavCount -= 100;
+               else
+                   CurWavCount -= 50;
+               Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
+               if (CurWavCount > 0)
+               {
+                   tempIdx1 = levelScrollBar.Value;
+                   if (waveIn.leftData.Count - tempIdx1 < CurWavCount)
+                       tempIdx1 = waveIn.leftData.Count - CurWavCount;
+                   waveZoom.leftData = waveIn.leftData.GetRange(tempIdx1, CurWavCount);
+                   waveZoom.DrawAudio(waveZoom.leftData, pictureBox1);
+                   levelScrollBar.Maximum = waveIn.leftData.Count - CurWavCount;
+               }
+               else
+               {
+                   CurWavCount = tempCount;
+               }
            }
             else
            {
-               //zoomOut.PerformClick();
-               zoomOut_Click(sender, e); //faster than the method above
+               int tempIdx2;
+
+               if (CurWavCount < 500)
+                   CurWavCount += 50;
+               else if (CurWavCount >= 500 && CurWavCount < 1000)
+                   CurWavCount += 100;
+               else if (CurWavCount >= 1000 && CurWavCount < 20000)
+                   CurWavCount += 500;
+               else
+                   CurWavCount += 10000;
+               Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
+               if (CurWavCount < waveIn.leftData.Count)
+               {
+                   tempIdx2 = levelScrollBar.Value;
+                   if (waveIn.leftData.Count - tempIdx2 < CurWavCount)
+                       tempIdx2 = waveIn.leftData.Count - CurWavCount;
+                   waveZoom.leftData = waveIn.leftData.GetRange(tempIdx2, CurWavCount);
+                   waveZoom.DrawAudio(waveZoom.leftData, pictureBox1);
+                   levelScrollBar.Maximum = waveIn.leftData.Count - CurWavCount;
+               }
+               else
+                   CurWavCount = waveIn.leftData.Count;              
            }   
         }
-        public static WaveIn waveIn = new WaveIn();
-        public static WaveIn waveZoom;
-        public static int currentLevel;
+
+        void pictureBox2_MouseLeave(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+            this.ActiveControl = null;
+        }
+
+        void pictureBox2_MouseHover(object sender, EventArgs e)
+        {
+            //throw new NotImplementedException();
+            pictureBox2.Focus();
+        }
+
+
+        private void pictureBox2_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (e.Delta > 0)
+            {
+                int tempCount = CurSpectrCount;
+                int tempIdx1;
+                CurSpectrCount -= 10; ;
+                if (CurSpectrCount > 0)
+                {
+                    tempIdx1 = levelScrollBar.Value;
+                    if (waveIn.stftWav.Count - tempIdx1 < CurSpectrCount)
+                        tempIdx1 = waveIn.stftWav.Count - CurSpectrCount;
+                    waveZoom.stftWav = waveIn.stftWav.GetRange(tempIdx1, CurSpectrCount);
+                    waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
+                    levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                }
+                else
+                    CurSpectrCount = tempCount;
+            }
+            else
+            {
+                int tempIdx2;
+                CurSpectrCount += 10; ;
+                if (CurSpectrCount < waveIn.stftWav.Count)
+                {
+                    tempIdx2 = levelScrollBar.Value;
+                    if (waveIn.stftWav.Count - tempIdx2 < CurSpectrCount)
+                        tempIdx2 = waveIn.stftWav.Count - CurSpectrCount;
+                    waveZoom.stftWav = waveIn.stftWav.GetRange(tempIdx2, CurSpectrCount);
+                    waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
+                    levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                }
+                else
+                    CurSpectrCount = waveIn.stftWav.Count; 
+            }
+        }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -57,82 +156,29 @@ namespace WaveDisplay
             OpenFD.FileName = "";
             OpenFD.Filter = "PCM wave File|*.wav";
             OpenFD.ShowDialog();
-            string chosenFile = "";
             chosenFile= OpenFD.FileName;
             waveIn.waveExtract(chosenFile);
+            waveIn.STFT(waveIn.leftData, 2048);
             waveIn.DrawAudio(waveIn.leftData, pictureBox1);
             waveZoom = new WaveIn(waveIn);
-            currentLevel = waveZoom.leftData.Count;
-            Console.WriteLine("currentLevel : " + currentLevel.ToString());
+            CurWavCount = waveZoom.leftData.Count;
+            Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
             levelScrollBar.Maximum = 0;
-
-        }
-
-       
-
-        private void zoomIn_Click(object sender, EventArgs e)
-        {
-            int tempLevel = currentLevel;
-            int startLevel;
-            if (currentLevel > 20000)
-                currentLevel -= 10000;
-            else if (currentLevel <= 20000 && currentLevel > 1000)
-                currentLevel -= 500;
-            else if (currentLevel <= 1000 && currentLevel > 500)
-                currentLevel -= 100;
-            else
-                currentLevel -= 50;
-            Console.WriteLine("currentLevel : " + currentLevel.ToString());           
-            if (currentLevel > 0 )
-            {
-                startLevel = levelScrollBar.Value;
-                if (waveIn.leftData.Count - startLevel < currentLevel)
-                    startLevel = waveIn.leftData.Count - currentLevel;
-                waveZoom.leftData = waveIn.leftData.GetRange(startLevel, currentLevel);
-                waveZoom.DrawAudio(waveZoom.leftData, pictureBox1);
-                levelScrollBar.Maximum = waveIn.leftData.Count -currentLevel;
-            }
-            else
-            {
-                currentLevel = tempLevel;
-            }
-        }
-
-        private void zoomOut_Click(object sender, EventArgs e)
-        {
-            int startLevel;
-
-            if (currentLevel < 500)
-                currentLevel += 50;
-            else if (currentLevel >= 500 && currentLevel < 1000)
-                currentLevel += 100;
-            else if (currentLevel >= 1000 && currentLevel < 20000)
-                currentLevel += 500;
-            else
-                currentLevel += 10000;
-            Console.WriteLine("currentLevel : " + currentLevel.ToString());
-            if (currentLevel < waveIn.leftData.Count)
-            {
-                startLevel = levelScrollBar.Value;
-                if (waveIn.leftData.Count - startLevel < currentLevel)
-                    startLevel = waveIn.leftData.Count - currentLevel;
-                waveZoom.leftData = waveIn.leftData.GetRange(startLevel, currentLevel);
-                waveZoom.DrawAudio(waveZoom.leftData, pictureBox1);
-                levelScrollBar.Maximum = waveIn.leftData.Count - currentLevel;
-            }
-            else
-            {
-                currentLevel = waveIn.leftData.Count;
-            }
-               
-            
         }
 
         private void levelScrollBar_Scroll(object sender, ScrollEventArgs e)
-        {         
-            waveZoom.leftData = waveIn.leftData.GetRange(levelScrollBar.Value, currentLevel);
-            waveZoom.DrawAudio(waveZoom.leftData, pictureBox1);
-            Console.WriteLine("value : " + levelScrollBar.Value.ToString());
+        {
+            if (tabControl1.SelectedIndex == 0)
+            {
+                waveZoom.leftData = waveIn.leftData.GetRange(levelScrollBar.Value, CurWavCount);
+                waveZoom.DrawAudio(waveZoom.leftData, pictureBox1);
+                Console.WriteLine("value : " + levelScrollBar.Value.ToString());
+            }
+            else if (tabControl1.SelectedIndex == 1)
+            {
+                waveZoom.stftWav = waveIn.stftWav.GetRange(levelScrollBar.Value, CurSpectrCount);
+                waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
+            }           
         }
 
         private void Form1_Load(object sender, EventArgs e)
@@ -140,10 +186,42 @@ namespace WaveDisplay
 
         }
 
-        private void pictureBox1_Click(object sender, EventArgs e)
+        private void tabControl1_Selected(object sender, TabControlEventArgs e)
+        {
+            if (e.TabPageIndex== 0)
+            {
+                if (chosenFile != "")
+                {
+                    waveIn.DrawAudio(waveIn.leftData, pictureBox1);
+                    waveZoom = new WaveIn(waveIn);
+                    CurWavCount = waveZoom.leftData.Count;
+                    Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
+                    levelScrollBar.Maximum = 0;
+                }
+            }
+            else if (e.TabPageIndex == 1)
+            {
+                if (chosenFile != "")
+                {
+                    waveIn.spectrogram(waveIn.stftWav, pictureBox2);
+                    waveZoom = new WaveIn(waveIn);
+                    CurSpectrCount = waveZoom.stftWav.Count;
+                    levelScrollBar.Maximum = 0;
+
+                }
+            }
+        }
+
+        private void VZoom_in_Click(object sender, EventArgs e)
         {
 
         }
+
+        private void VZoom_out_Click(object sender, EventArgs e)
+        {
+
+        }
+
     }
 
     public class WaveIn
@@ -164,7 +242,7 @@ namespace WaveDisplay
         }
         public List<short> leftData = new List<short>(); //Aussme if filewave is mono, use this leftData to extract data
         public List<short> rightData= new List<short>();
-
+        public List<List<float>> stftWav = new List<List<float>>();
         public WaveIn(WaveIn previousWave)
         {
             leftData = previousWave.leftData;
@@ -230,7 +308,8 @@ namespace WaveDisplay
             int index = 0;
             int width = picDraw.Width;
             int height = picDraw.Height;
-            SizeF sizef=new SizeF(); RectangleF rectanglef=new RectangleF();
+            SizeF sizef=new SizeF(); 
+            RectangleF rectanglef=new RectangleF();
             bmp = new Bitmap(width, height);
             using (Graphics g = Graphics.FromImage(bmp))
             {
@@ -286,20 +365,57 @@ namespace WaveDisplay
             }
             return outputValues;
         }
-        public List<List<float>> STFT(List<short> inputValues, short No)
+
+        public void spectrogram(List<List<float>> inputValues, PictureBox picdraw)
+        {
+            int NoFFt = inputValues[0].Count;
+            int i, j;
+
+            Bitmap bmp = new Bitmap(picdraw.Width, picdraw.Height);
+            float maxData = inputValues.Max(column => column.Max());
+            RectangleF rectF = new RectangleF();
+            SizeF rectFsize = new SizeF();
+            PointF coordF = new PointF();
+            float Xscale = (float)picdraw.Width / inputValues.Count;
+            float Yscale = (float)picdraw.Height / (NoFFt / 2);
+            rectFsize = new SizeF(Xscale, Yscale);
+
+            using (Graphics g = Graphics.FromImage(bmp))
+            {
+                g.Clear(Color.Black);
+                for (i = 0; i < inputValues.Count; i++)
+                {      
+                    for (j=0 ; j<NoFFt/2 ; j++)
+                    {
+                        coordF = new PointF(i* Xscale, j * Yscale);
+                        rectF = new RectangleF(coordF, rectFsize);
+                        g.FillRectangle(new SolidBrush(getColor(inputValues[i][(NoFFt / 2 - 1) - j], maxData)), rectF);
+                    }
+                }
+            }
+            picdraw.Image = bmp;        
+        }
+
+        public Color getColor(float input, float maxData)
+        {
+            float colorFactor=input/maxData;
+            int red = (int)(255 * Math.Pow(colorFactor,0.8));
+            int blue = (int)(255 * Math.Pow(colorFactor, 0.7));
+            int green = (int)(255 * Math.Pow(colorFactor,0.4));
+            return Color.FromArgb(255, red, green, blue);
+
+        }
+        public void STFT(List<short> inputValues, short No)
         {
             int i, overLap = No / 2;
-            List<List<float>> stftChunks = new List<List<float>>();
             List<float> fftChunk = new List<float>();
             int count= inputValues.Count;
-            for (i = 0; i + No < count;i +=overLap)
-            {
+            for (i = 0; i + No < count;i +=overLap)            {
                 fftChunk =FFT( inputValues.GetRange(i, No));
-                stftChunks.Add(fftChunk);
+                stftWav.Add(fftChunk);
             }
             fftChunk = FFT(inputValues.GetRange(count - No, No));
-            stftChunks.Add(fftChunk);
-            return stftChunks;
+            stftWav.Add(fftChunk);
 
         }
         public List<float> FFT(List<short> inputValues)
@@ -307,9 +423,9 @@ namespace WaveDisplay
             int N = inputValues.Count; //assume N =2^n
             int n = (int)(Math.Log(N) / Math.Log(2));
             int i;
-            List<float> Real = inputValues.Cast<float>().ToList();
+            List<float> Real = inputValues.ConvertAll(y =>(float)y);
             List<float> Imagine = new List<float>();
-            for(i=0;i<Imagine.Count;i++)
+            for(i=0;i< inputValues.Count;i++)
             {
                 Imagine.Add(0.0f);
             }
