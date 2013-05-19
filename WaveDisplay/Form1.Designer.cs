@@ -78,7 +78,7 @@
             // 
             this.levelScrollBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.levelScrollBar.LargeChange = 1;
-            this.levelScrollBar.Location = new System.Drawing.Point(0, 758);
+            this.levelScrollBar.Location = new System.Drawing.Point(4, 750);
             this.levelScrollBar.Maximum = 0;
             this.levelScrollBar.Name = "levelScrollBar";
             this.levelScrollBar.Size = new System.Drawing.Size(1169, 24);
@@ -90,7 +90,7 @@
             this.tabControl1.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(0, 21);
+            this.tabControl1.Location = new System.Drawing.Point(0, 17);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(1276, 734);
@@ -157,6 +157,7 @@
             this.vScrollBar1.Name = "vScrollBar1";
             this.vScrollBar1.Size = new System.Drawing.Size(22, 617);
             this.vScrollBar1.TabIndex = 1;
+            this.vScrollBar1.Scroll += new System.Windows.Forms.ScrollEventHandler(this.vScrollBar1_Scroll);
             // 
             // pictureBox2
             // 
@@ -174,7 +175,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1276, 782);
+            this.ClientSize = new System.Drawing.Size(1276, 774);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.levelScrollBar);
             this.Controls.Add(this.menuStrip1);

@@ -127,7 +127,8 @@ namespace WaveDisplay
                         tempIdx1 = waveIn.stftWav.Count - CurSpectrCount;
                     waveZoom.stftWav = waveIn.stftWav.GetRange(tempIdx1, CurSpectrCount);
                     waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
-                    levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                    //levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                    vScrollBar1.Maximum = waveIn.stftWav.Count - CurSpectrCount;
                 }
                 else
                     CurSpectrCount = tempCount;
@@ -143,7 +144,8 @@ namespace WaveDisplay
                         tempIdx2 = waveIn.stftWav.Count - CurSpectrCount;
                     waveZoom.stftWav = waveIn.stftWav.GetRange(tempIdx2, CurSpectrCount);
                     waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
-                    levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                    //levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                    vScrollBar1.Maximum = waveIn.stftWav.Count - CurSpectrCount;
                 }
                 else
                     CurSpectrCount = waveIn.stftWav.Count; 
@@ -164,6 +166,9 @@ namespace WaveDisplay
             CurWavCount = waveZoom.leftData.Count;
             Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
             levelScrollBar.Maximum = 0;
+            //List<List<float>> stftChunks = new List<List<float>>();
+            //stftChunks = waveIn.STFT(waveIn.leftData,10);
+            //Console.WriteLine("  ");
         }
 
         private void levelScrollBar_Scroll(object sender, ScrollEventArgs e)
@@ -207,6 +212,7 @@ namespace WaveDisplay
                     waveZoom = new WaveIn(waveIn);
                     CurSpectrCount = waveZoom.stftWav.Count;
                     levelScrollBar.Maximum = 0;
+                    vScrollBar1.Maximum = 0;
 
                 }
             }
@@ -220,6 +226,12 @@ namespace WaveDisplay
         private void VZoom_out_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void vScrollBar1_Scroll(object sender, ScrollEventArgs e)
+        {
+            waveZoom.stftWav = waveIn.stftWav.GetRange(vScrollBar1.Value, CurSpectrCount);
+            waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
         }
 
     }
@@ -373,16 +385,32 @@ namespace WaveDisplay
 
             Bitmap bmp = new Bitmap(picdraw.Width, picdraw.Height);
             float maxData = inputValues.Max(column => column.Max());
+            Console.WriteLine("maxData: "+ maxData.ToString());
             RectangleF rectF = new RectangleF();
             SizeF rectFsize = new SizeF();
             PointF coordF = new PointF();
             float Xscale = (float)picdraw.Width / inputValues.Count;
             float Yscale = (float)picdraw.Height / (NoFFt / 2);
             rectFsize = new SizeF(Xscale, Yscale);
-
+            float maxInput=0.0f;
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.Black);
+                for (i = 0; i < inputValues.Count; i++)
+                {
+                    for (j = 0; j < NoFFt / 2; j++)
+                    {
+                        //coordF = new PointF(i * Xscale, j * Yscale);
+                        //rectF = new RectangleF(coordF, rectFsize);
+                        //g.FillRectangle(new SolidBrush(getColor(inputValues[i][(NoFFt / 2 - 1) - j], maxData)), rectF);
+                        if (inputValues[i][(NoFFt / 2 - 1) - j] > maxInput)
+                        {
+                            maxInput = inputValues[i][(NoFFt / 2 - 1) - j];
+                        }
+                        
+                    }
+                }
+                Console.WriteLine("maxInput:" + maxInput.ToString());
                 for (i = 0; i < inputValues.Count; i++)
                 {      
                     for (j=0 ; j<NoFFt/2 ; j++)
@@ -398,10 +426,13 @@ namespace WaveDisplay
 
         public Color getColor(float input, float maxData)
         {
-            float colorFactor=input/maxData;
-            int red = (int)(255 * Math.Pow(colorFactor,0.8));
-            int blue = (int)(255 * Math.Pow(colorFactor, 0.7));
-            int green = (int)(255 * Math.Pow(colorFactor,0.4));
+            
+            float colorFactor = input / maxData;
+            //Console.WriteLine("colorFactor: " + colorFactor.ToString());
+            int red=0,green=0,blue=0;
+            red = (int)(255 * Math.Pow(colorFactor, 0.2));
+            green = (int)(255 * Math.Pow(colorFactor, 0.2));
+            blue = (int)(255 * Math.Pow(colorFactor, 0.7));                      
             return Color.FromArgb(255, red, green, blue);
 
         }
@@ -410,7 +441,8 @@ namespace WaveDisplay
             int i, overLap = No / 2;
             List<float> fftChunk = new List<float>();
             int count= inputValues.Count;
-            for (i = 0; i + No < count;i +=overLap)            {
+            for (i = 0; i + No < count;i +=overLap)
+            {
                 fftChunk =FFT( inputValues.GetRange(i, No));
                 stftWav.Add(fftChunk);
             }
