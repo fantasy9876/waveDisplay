@@ -128,7 +128,7 @@ namespace WaveDisplay
                     waveZoom.stftWav = waveIn.stftWav.GetRange(tempIdx1, CurSpectrCount);
                     waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
                     //levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
-                    vScrollBar1.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                   
                 }
                 else
                     CurSpectrCount = tempCount;
@@ -144,8 +144,8 @@ namespace WaveDisplay
                         tempIdx2 = waveIn.stftWav.Count - CurSpectrCount;
                     waveZoom.stftWav = waveIn.stftWav.GetRange(tempIdx2, CurSpectrCount);
                     waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
-                    //levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
-                    vScrollBar1.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                    levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
+                    
                 }
                 else
                     CurSpectrCount = waveIn.stftWav.Count; 
@@ -166,9 +166,6 @@ namespace WaveDisplay
             CurWavCount = waveZoom.leftData.Count;
             Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
             levelScrollBar.Maximum = 0;
-            //List<List<float>> stftChunks = new List<List<float>>();
-            //stftChunks = waveIn.STFT(waveIn.leftData,10);
-            //Console.WriteLine("  ");
         }
 
         private void levelScrollBar_Scroll(object sender, ScrollEventArgs e)
@@ -212,27 +209,11 @@ namespace WaveDisplay
                     waveZoom = new WaveIn(waveIn);
                     CurSpectrCount = waveZoom.stftWav.Count;
                     levelScrollBar.Maximum = 0;
-                    vScrollBar1.Maximum = 0;
-
                 }
             }
         }
 
-        private void VZoom_in_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void VZoom_out_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void vScrollBar1_Scroll(object sender, ScrollEventArgs e)
-        {
-            waveZoom.stftWav = waveIn.stftWav.GetRange(vScrollBar1.Value, CurSpectrCount);
-            waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
-        }
+       
 
     }
 
@@ -392,25 +373,10 @@ namespace WaveDisplay
             float Xscale = (float)picdraw.Width / inputValues.Count;
             float Yscale = (float)picdraw.Height / (NoFFt / 2);
             rectFsize = new SizeF(Xscale, Yscale);
-            float maxInput=0.0f;
+
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.Black);
-                for (i = 0; i < inputValues.Count; i++)
-                {
-                    for (j = 0; j < NoFFt / 2; j++)
-                    {
-                        //coordF = new PointF(i * Xscale, j * Yscale);
-                        //rectF = new RectangleF(coordF, rectFsize);
-                        //g.FillRectangle(new SolidBrush(getColor(inputValues[i][(NoFFt / 2 - 1) - j], maxData)), rectF);
-                        if (inputValues[i][(NoFFt / 2 - 1) - j] > maxInput)
-                        {
-                            maxInput = inputValues[i][(NoFFt / 2 - 1) - j];
-                        }
-                        
-                    }
-                }
-                Console.WriteLine("maxInput:" + maxInput.ToString());
                 for (i = 0; i < inputValues.Count; i++)
                 {      
                     for (j=0 ; j<NoFFt/2 ; j++)
