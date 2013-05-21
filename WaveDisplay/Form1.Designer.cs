@@ -38,6 +38,8 @@
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.OpenFD = new System.Windows.Forms.OpenFileDialog();
+            this.markBut = new System.Windows.Forms.Button();
+            this.viewOctBut = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabPage1.SuspendLayout();
@@ -76,10 +78,10 @@
             // 
             this.levelScrollBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
             this.levelScrollBar.LargeChange = 1;
-            this.levelScrollBar.Location = new System.Drawing.Point(5, 923);
+            this.levelScrollBar.Location = new System.Drawing.Point(209, 923);
             this.levelScrollBar.Maximum = 0;
             this.levelScrollBar.Name = "levelScrollBar";
-            this.levelScrollBar.Size = new System.Drawing.Size(1559, 24);
+            this.levelScrollBar.Size = new System.Drawing.Size(1355, 24);
             this.levelScrollBar.TabIndex = 2;
             this.levelScrollBar.Scroll += new System.Windows.Forms.ScrollEventHandler(this.levelScrollBar_Scroll);
             // 
@@ -143,11 +145,35 @@
             // 
             this.OpenFD.FileName = "openFileDialog1";
             // 
+            // markBut
+            // 
+            this.markBut.BackColor = System.Drawing.Color.Linen;
+            this.markBut.Location = new System.Drawing.Point(12, 923);
+            this.markBut.Name = "markBut";
+            this.markBut.Size = new System.Drawing.Size(75, 25);
+            this.markBut.TabIndex = 6;
+            this.markBut.Text = "Mark";
+            this.markBut.UseVisualStyleBackColor = false;
+            this.markBut.Click += new System.EventHandler(this.markBut_Click);
+            // 
+            // viewOctBut
+            // 
+            this.viewOctBut.BackColor = System.Drawing.Color.Linen;
+            this.viewOctBut.Location = new System.Drawing.Point(93, 923);
+            this.viewOctBut.Name = "viewOctBut";
+            this.viewOctBut.Size = new System.Drawing.Size(99, 25);
+            this.viewOctBut.TabIndex = 7;
+            this.viewOctBut.Text = "view octave";
+            this.viewOctBut.UseVisualStyleBackColor = false;
+            this.viewOctBut.Click += new System.EventHandler(this.viewOctBut_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1701, 953);
+            this.Controls.Add(this.viewOctBut);
+            this.Controls.Add(this.markBut);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.levelScrollBar);
             this.Controls.Add(this.menuStrip1);
@@ -180,6 +206,8 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.OpenFileDialog OpenFD;
+        private System.Windows.Forms.Button markBut;
+        private System.Windows.Forms.Button viewOctBut;
     }
 }
 

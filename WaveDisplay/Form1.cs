@@ -213,6 +213,16 @@ namespace WaveDisplay
             }
         }
 
+        private void markBut_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void viewOctBut_Click(object sender, EventArgs e)
+        {
+
+        }
+
        
 
     }
@@ -396,15 +406,15 @@ namespace WaveDisplay
             float colorFactor = input / maxData;
             //Console.WriteLine("colorFactor: " + colorFactor.ToString());
             int red=0,green=0,blue=0;
-            red = (int)(255 * Math.Pow(colorFactor, 0.2));
-            green = (int)(255 * Math.Pow(colorFactor, 0.2));
-            blue = (int)(255 * Math.Pow(colorFactor, 0.7));                      
+            red = (int)(255 * Math.Pow(colorFactor, 0.35));
+            green = (int)(255 * Math.Pow(colorFactor, 0.4));
+            blue = (int)(255 * Math.Pow(colorFactor, 0.65));                      
             return Color.FromArgb(255, red, green, blue);
 
         }
         public void STFT(List<short> inputValues, short No)
         {
-            int i, overLap = No / 2;
+            int i, overLap = No / 4;
             List<float> fftChunk = new List<float>();
             int count= inputValues.Count;
             for (i = 0; i + No < count;i +=overLap)
