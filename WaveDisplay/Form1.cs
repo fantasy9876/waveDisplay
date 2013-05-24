@@ -120,7 +120,7 @@ namespace WaveDisplay
         private void pictureBox2_MouseWheel(object sender, MouseEventArgs e)
         {
             Bitmap bmpOut = new Bitmap(pictureBox2.Width, pictureBox2.Height);
-            Bitmap[] bmpMark = {bmpOut,bmpOut};
+            Bitmap bmpMark = new Bitmap(bmpOut);
             if (e.Delta > 0)
             {
                 int tempCount = CurSpectrCount;
@@ -173,8 +173,8 @@ namespace WaveDisplay
             using (Graphics G = Graphics.FromImage(bmpOut))
             {
                 G.DrawImage(bmpSpectro, 0, 0);
-                G.DrawImage(bmpMark[0], 0, 0);
-                G.DrawImage(bmpMark[1], 0, 0);
+                G.DrawImage(bmpMark, 0, 0);
+
             }
             pictureBox2.Image = bmpOut;
         }
@@ -212,14 +212,13 @@ namespace WaveDisplay
                 chunkIndexRange[0] = levelScrollBar.Value;
                 chunkIndexRange[1] = levelScrollBar.Value + CurSpectrCount - 1;
                 Bitmap bmpOut = new Bitmap(pictureBox2.Width, pictureBox2.Height);
-                Bitmap[] bmpMark = { bmpOut, bmpOut };
+                Bitmap bmpMark = new Bitmap(bmpOut);
                 bmpSpectro=waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
                 marksDisplay(ref bmpMark);
                 using (Graphics G = Graphics.FromImage(bmpOut))
                 {
                     G.DrawImage(bmpSpectro, 0, 0);
-                    G.DrawImage(bmpMark[0], 0, 0);
-                    G.DrawImage(bmpMark[1], 0, 0);
+                    G.DrawImage(bmpMark, 0, 0);
                 }
                 pictureBox2.Image = bmpOut;
             }           
@@ -289,33 +288,29 @@ namespace WaveDisplay
                 markChunk[0] = (int)(chunkRate * e.X + chunkIndexRange[0]);
         }
 
-        public void marksDisplay(ref Bitmap[] bmpMark)
+        public void marksDisplay(ref Bitmap bmpMark)
         {
-             float pxRate = (float)((float)pictureBox2.Width / (chunkIndexRange[1] + 1 - chunkIndexRange[0]));
+            float pxRate = (float)((float)pictureBox2.Width / (chunkIndexRange[1] + 1 - chunkIndexRange[0]));
             float X1, X2;
 
             if (markChunk[0] >= chunkIndexRange[0] && markChunk[0] <= chunkIndexRange[1])
             {
-                X1 = (float)(pxRate * markChunk[0]);
-                drawMarkLine(X1, ref bmpMark[0]);
+                X1 = (float)(pxRate * (markChunk[0]-chunkIndexRange[0]));
+                drawMarkLine(X1, ref bmpMark);
                 if (mark && markChunk[1] >= chunkIndexRange[0] && markChunk[1] <= chunkIndexRange[1])
                 {
                     X2 = (float)(pxRate * markChunk[1]);
-                    drawMarkLine(X2, ref bmpMark[1]);
+                    drawMarkLine(X2, ref bmpMark);
                 }
-                else
-                    bmpMark[1].MakeTransparent();
             }
             else
             {
-                bmpMark[0].MakeTransparent();
+                bmpMark.MakeTransparent();
                 if (mark && markChunk[1] >= chunkIndexRange[0] && markChunk[1] <= chunkIndexRange[1])
                 {
                     X2 = (float)(pxRate * markChunk[1]);
-                    drawMarkLine(X2, ref bmpMark[1]);
+                    drawMarkLine(X2, ref bmpMark);
                 }
-                else
-                    bmpMark[1].MakeTransparent();
             }
         }
 
