@@ -13,11 +13,15 @@ namespace WaveDisplay
     public partial class Form1 : Form
     {
         public static WaveIn waveIn = new WaveIn();
-        public static WaveIn waveZoom;
+        public static WaveIn waveZoom=new WaveIn();
         public static int CurWavCount;
         public static int CurSpectrCount;
         public static int CurVerCount;
-        public string chosenFile = "";
+        public static string chosenFile = "";
+        public static int[] chunkIndexRange=new int[2];
+        public static bool mark=false;
+        public static Bitmap bmpSpectro = new Bitmap(1, 1);
+        public static int[] markChunk = {0,0};
 
         public Form1()
         {
@@ -115,41 +119,64 @@ namespace WaveDisplay
 
         private void pictureBox2_MouseWheel(object sender, MouseEventArgs e)
         {
+            Bitmap bmpOut = new Bitmap(pictureBox2.Width, pictureBox2.Height);
+            Bitmap[] bmpMark = {bmpOut,bmpOut};
             if (e.Delta > 0)
             {
                 int tempCount = CurSpectrCount;
-                int tempIdx1;
-                CurSpectrCount -= 10; ;
+                int tempIdx1=levelScrollBar.Value;
+                if (CurSpectrCount < 100)
+                    CurSpectrCount -= 20;
+                else
+                    CurSpectrCount -= 50; ;
                 if (CurSpectrCount > 0)
-                {
-                    tempIdx1 = levelScrollBar.Value;
+                {                    
                     if (waveIn.stftWav.Count - tempIdx1 < CurSpectrCount)
                         tempIdx1 = waveIn.stftWav.Count - CurSpectrCount;
                     waveZoom.stftWav = waveIn.stftWav.GetRange(tempIdx1, CurSpectrCount);
-                    waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
-                    //levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
-                   
+                    bmpSpectro= waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
+                    levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;                    
                 }
                 else
+                {
                     CurSpectrCount = tempCount;
+                }
+                chunkIndexRange[0] = tempIdx1;
+                chunkIndexRange[1] = tempIdx1 + CurSpectrCount-1;
             }
             else
             {
                 int tempIdx2;
-                CurSpectrCount += 10; ;
+                tempIdx2 = levelScrollBar.Value;
+                if (CurSpectrCount < 100)
+                    CurSpectrCount += 20;
+                else
+                    CurSpectrCount += 50; ;
                 if (CurSpectrCount < waveIn.stftWav.Count)
                 {
-                    tempIdx2 = levelScrollBar.Value;
                     if (waveIn.stftWav.Count - tempIdx2 < CurSpectrCount)
                         tempIdx2 = waveIn.stftWav.Count - CurSpectrCount;
                     waveZoom.stftWav = waveIn.stftWav.GetRange(tempIdx2, CurSpectrCount);
-                    waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
+                    bmpSpectro= waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
                     levelScrollBar.Maximum = waveIn.stftWav.Count - CurSpectrCount;
-                    
                 }
                 else
-                    CurSpectrCount = waveIn.stftWav.Count; 
+                {
+                    CurSpectrCount = waveIn.stftWav.Count;
+                    tempIdx2 = 0;
+                }
+                chunkIndexRange[0] = tempIdx2;
+                chunkIndexRange[1] = tempIdx2 + CurSpectrCount-1;                                            
             }
+
+            marksDisplay(ref bmpMark);
+            using (Graphics G = Graphics.FromImage(bmpOut))
+            {
+                G.DrawImage(bmpSpectro, 0, 0);
+                G.DrawImage(bmpMark[0], 0, 0);
+                G.DrawImage(bmpMark[1], 0, 0);
+            }
+            pictureBox2.Image = bmpOut;
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
@@ -159,13 +186,16 @@ namespace WaveDisplay
             OpenFD.Filter = "PCM wave File|*.wav";
             OpenFD.ShowDialog();
             chosenFile= OpenFD.FileName;
-            waveIn.waveExtract(chosenFile);
-            waveIn.STFT(waveIn.leftData, 2048);
-            waveIn.DrawAudio(waveIn.leftData, pictureBox1);
-            waveZoom = new WaveIn(waveIn);
-            CurWavCount = waveZoom.leftData.Count;
-            Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
-            levelScrollBar.Maximum = 0;
+            if (chosenFile != "")
+            {
+                waveIn = new WaveIn();
+                waveIn.waveExtract(chosenFile);
+                waveIn.STFT(waveIn.leftData, 1024);
+                waveIn.DrawAudio(waveIn.leftData, pictureBox1);    
+                Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
+                levelScrollBar.Maximum = 0;
+            }
+            
         }
 
         private void levelScrollBar_Scroll(object sender, ScrollEventArgs e)
@@ -179,7 +209,19 @@ namespace WaveDisplay
             else if (tabControl1.SelectedIndex == 1)
             {
                 waveZoom.stftWav = waveIn.stftWav.GetRange(levelScrollBar.Value, CurSpectrCount);
-                waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
+                chunkIndexRange[0] = levelScrollBar.Value;
+                chunkIndexRange[1] = levelScrollBar.Value + CurSpectrCount - 1;
+                Bitmap bmpOut = new Bitmap(pictureBox2.Width, pictureBox2.Height);
+                Bitmap[] bmpMark = { bmpOut, bmpOut };
+                bmpSpectro=waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
+                marksDisplay(ref bmpMark);
+                using (Graphics G = Graphics.FromImage(bmpOut))
+                {
+                    G.DrawImage(bmpSpectro, 0, 0);
+                    G.DrawImage(bmpMark[0], 0, 0);
+                    G.DrawImage(bmpMark[1], 0, 0);
+                }
+                pictureBox2.Image = bmpOut;
             }           
         }
 
@@ -195,7 +237,7 @@ namespace WaveDisplay
                 if (chosenFile != "")
                 {
                     waveIn.DrawAudio(waveIn.leftData, pictureBox1);
-                    waveZoom = new WaveIn(waveIn);
+                    waveZoom.leftData = waveIn.leftData.ToList();
                     CurWavCount = waveZoom.leftData.Count;
                     Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
                     levelScrollBar.Maximum = 0;
@@ -205,17 +247,21 @@ namespace WaveDisplay
             {
                 if (chosenFile != "")
                 {
-                    waveIn.spectrogram(waveIn.stftWav, pictureBox2);
-                    waveZoom = new WaveIn(waveIn);
+                    bmpSpectro= waveIn.spectrogram(waveIn.stftWav, pictureBox2);
+                    pictureBox2.Image = bmpSpectro;
+                    waveZoom.stftWav = waveIn.stftWav.ToList();
                     CurSpectrCount = waveZoom.stftWav.Count;
                     levelScrollBar.Maximum = 0;
+                    chunkIndexRange[0] = 0;
+                    chunkIndexRange[1] = CurSpectrCount;
                 }
             }
         }
 
         private void markBut_Click(object sender, EventArgs e)
         {
-
+            mark = (mark) ? false : true;
+            markBut.Enabled = false;
         }
 
         private void viewOctBut_Click(object sender, EventArgs e)
@@ -223,26 +269,88 @@ namespace WaveDisplay
 
         }
 
-       
+        private void pictureBox2_MouseClick(object sender, MouseEventArgs e)
+        {
+            markBut.Enabled = true;
+            Bitmap bmpSave= new Bitmap(bmpSpectro);
+            if (mark)
+                bmpSave=new Bitmap(pictureBox2.Image);
+            Bitmap bmpMark = new Bitmap (bmpSave);
+            drawMarkLine(e.X,ref bmpMark);
+            using (Graphics G = Graphics.FromImage(bmpSave))
+            {
+                G.DrawImage(bmpMark, 0, 0);
+            }
+            pictureBox2.Image = bmpSave;
+            float chunkRate = (float)((chunkIndexRange[1] + 1 - chunkIndexRange[0]) /(float) bmpSave.Width);
+            if (mark)
+                markChunk[1] = (int)(chunkRate * e.X + chunkIndexRange[0]);
+            else
+                markChunk[0] = (int)(chunkRate * e.X + chunkIndexRange[0]);
+        }
 
+        public void marksDisplay(ref Bitmap[] bmpMark)
+        {
+             float pxRate = (float)((float)pictureBox2.Width / (chunkIndexRange[1] + 1 - chunkIndexRange[0]));
+            float X1, X2;
+
+            if (markChunk[0] >= chunkIndexRange[0] && markChunk[0] <= chunkIndexRange[1])
+            {
+                X1 = (float)(pxRate * markChunk[0]);
+                drawMarkLine(X1, ref bmpMark[0]);
+                if (mark && markChunk[1] >= chunkIndexRange[0] && markChunk[1] <= chunkIndexRange[1])
+                {
+                    X2 = (float)(pxRate * markChunk[1]);
+                    drawMarkLine(X2, ref bmpMark[1]);
+                }
+                else
+                    bmpMark[1].MakeTransparent();
+            }
+            else
+            {
+                bmpMark[0].MakeTransparent();
+                if (mark && markChunk[1] >= chunkIndexRange[0] && markChunk[1] <= chunkIndexRange[1])
+                {
+                    X2 = (float)(pxRate * markChunk[1]);
+                    drawMarkLine(X2, ref bmpMark[1]);
+                }
+                else
+                    bmpMark[1].MakeTransparent();
+            }
+        }
+
+        public void drawMarkLine(float Xlocation, ref Bitmap Layer)
+        {
+
+            Layer.MakeTransparent();
+            using (Graphics g = Graphics.FromImage(Layer))
+            {
+                Pen markPen = new Pen(Color.Green, 3.0f);
+                markPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+                g.DrawLine(markPen, new PointF(Xlocation, 0), new PointF(Xlocation, (float)Layer.Height));
+            }
+        }
+    }
+
+    public struct waveHeader
+    {
+        public byte[] riffID;
+        public byte[] fileFormat;
+        public byte[] fmtID;
+        public UInt16 audioFormat;
+        public UInt16 nChannels;
+        public uint sampleRate;
+        public uint byteRate;
+        public UInt16 blockAlign;
+        public UInt16 bitSample;
+        public byte[] dataID;
+        public uint dataSize;
     }
 
     public class WaveIn
-    {
-        struct waveHeader
-        {
-            public byte[] riffID;
-            public byte[] fileFormat;
-            public byte[] fmtID;
-            public UInt16 audioFormat;
-            public UInt16 nChannels;
-            public uint sampleRate;
-            public uint byteRate;
-            public UInt16 blockAlign;
-            public UInt16 bitSample;
-            public byte[] dataID;
-            public uint dataSize;
-        }
+    {        
+        public waveHeader wavHeader; 
+
         public List<short> leftData = new List<short>(); //Aussme if filewave is mono, use this leftData to extract data
         public List<short> rightData= new List<short>();
         public List<List<float>> stftWav = new List<List<float>>();
@@ -253,13 +361,14 @@ namespace WaveDisplay
         }
         public WaveIn()
         {
+            leftData.Clear();
+            rightData.Clear();
+            stftWav.Clear();
         }
 
         public void waveExtract(string filename)
         {
             byte[] tmpByte;
-            waveHeader wavHeader;
-
             try 
             {
                 using (FileStream wave_fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
@@ -295,7 +404,7 @@ namespace WaveDisplay
                     }
                     string riff = Encoding.UTF8.GetString(wavHeader.riffID);
                     string format =Encoding.UTF8.GetString(wavHeader.fileFormat);
-                    //MessageBox.Show("wav File header " + riff + " " + format + " " + wavHeader.audioFormat.ToString());
+                    Console.WriteLine("wav File header " + riff + " " + format + " " + wavHeader.audioFormat.ToString());
                 }
             }            
             catch(FileNotFoundException e)
@@ -305,7 +414,7 @@ namespace WaveDisplay
 
         }
 
-        public void DrawAudio(List<short> inputValues, PictureBox picDraw)
+        public Bitmap DrawAudio(List<short> inputValues, PictureBox picDraw)
         {
             Bitmap bmp;
             int index = 0;
@@ -349,6 +458,7 @@ namespace WaveDisplay
                 
             }
             picDraw.Image = bmp;
+            return bmp;
         }
 
         public List<Int16> waveNormalize(List<short> inputValues, int pxRangeX, int pxRangeY)
@@ -369,7 +479,7 @@ namespace WaveDisplay
             return outputValues;
         }
 
-        public void spectrogram(List<List<float>> inputValues, PictureBox picdraw)
+        public Bitmap spectrogram(List<List<float>> inputValues, PictureBox picdraw)
         {
             int NoFFt = inputValues[0].Count;
             int i, j;
@@ -397,7 +507,7 @@ namespace WaveDisplay
                     }
                 }
             }
-            picdraw.Image = bmp;        
+            return bmp;
         }
 
         public Color getColor(float input, float maxData)

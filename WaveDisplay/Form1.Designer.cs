@@ -140,6 +140,7 @@
             this.pictureBox2.Size = new System.Drawing.Size(1685, 864);
             this.pictureBox2.TabIndex = 0;
             this.pictureBox2.TabStop = false;
+            this.pictureBox2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox2_MouseClick);
             // 
             // OpenFD
             // 
@@ -148,6 +149,7 @@
             // markBut
             // 
             this.markBut.BackColor = System.Drawing.Color.Linen;
+            this.markBut.Enabled = false;
             this.markBut.Location = new System.Drawing.Point(12, 923);
             this.markBut.Name = "markBut";
             this.markBut.Size = new System.Drawing.Size(75, 25);
