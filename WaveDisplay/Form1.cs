@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using NAudio.Dsp;
 
 namespace WaveDisplay
 {
@@ -19,10 +20,10 @@ namespace WaveDisplay
         public static int CurVerCount;
         public static string chosenFile = "";
         public static int[] chunkIndexRange=new int[2];
-        public static bool mark=false;
+        public static bool mark=false, view=false;
         public static Bitmap bmpSpectro = new Bitmap(1, 1);
-        public static int[] markChunk = {0,0};
-
+        public static int[] markChunk = { 0, 0 };
+        public const int stftChunkSize = 1024;
         public Form1()
         {
             InitializeComponent();
@@ -190,7 +191,7 @@ namespace WaveDisplay
             {
                 waveIn = new WaveIn();
                 waveIn.waveExtract(chosenFile);
-                waveIn.STFT(waveIn.leftData, 1024);
+                waveIn.STFT(waveIn.leftData, stftChunkSize);
                 waveIn.DrawAudio(waveIn.leftData, pictureBox1);    
                 Console.WriteLine("CurWavCount : " + CurWavCount.ToString());
                 levelScrollBar.Maximum = 0;
@@ -246,13 +247,18 @@ namespace WaveDisplay
             {
                 if (chosenFile != "")
                 {
-                    bmpSpectro= waveIn.spectrogram(waveIn.stftWav, pictureBox2);
-                    pictureBox2.Image = bmpSpectro;
-                    waveZoom.stftWav = waveIn.stftWav.ToList();
-                    CurSpectrCount = waveZoom.stftWav.Count;
-                    levelScrollBar.Maximum = 0;
-                    chunkIndexRange[0] = 0;
-                    chunkIndexRange[1] = CurSpectrCount;
+                    if (view)
+                        pictureBox2.Invalidate();
+                    else
+                    {
+                        bmpSpectro = waveIn.spectrogram(waveIn.stftWav, pictureBox2);
+                        pictureBox2.Image = bmpSpectro;
+                        waveZoom.stftWav = waveIn.stftWav.ToList();
+                        CurSpectrCount = waveZoom.stftWav.Count;
+                        levelScrollBar.Maximum = 0;
+                        chunkIndexRange[0] = 0;
+                        chunkIndexRange[1] = CurSpectrCount;
+                    }
                 }
             }
         }
@@ -265,6 +271,37 @@ namespace WaveDisplay
 
         private void viewOctBut_Click(object sender, EventArgs e)
         {
+            bmpSpectro = waveIn.spectrogram(waveIn.stftWav, pictureBox2);
+            
+            chunkIndexRange[0] = 0;
+            chunkIndexRange[1] = waveIn.stftWav.Count;
+            Bitmap bmpOut = new Bitmap(pictureBox2.Width, pictureBox2.Height);
+            Bitmap bmpMark = new Bitmap(bmpOut);
+            mark = true;
+            float[] markLocations= marksDisplay(ref bmpMark);
+            mark = false;
+            using (Graphics g = Graphics.FromImage(bmpMark))
+            {
+                RectangleF markRect = new RectangleF(markLocations[0], 0, markLocations[1] - markLocations[0], bmpMark.Height);
+                g.FillRectangle(new SolidBrush(Color.FromArgb(50, Color.White)), markRect);
+            }
+            using (Graphics G = Graphics.FromImage(bmpOut))
+            {
+                G.DrawImage(bmpSpectro, 0, 0);
+                G.DrawImage(bmpMark, 0, 0);
+            }
+            pictureBox2.Image = bmpOut;
+            // get the waveData start and end index (data in time domain)
+            // start index is the start point of the stft data chunk, end is the end point of stft data chunk
+
+            int[] timeIndex = new int[2];
+            timeIndex[0] = markChunk[0] * stftChunkSize / 4;
+            timeIndex[1] = markChunk[1] * stftChunkSize / 4 + stftChunkSize;
+            
+            view = true;
+
+            //TODO: 
+            
 
         }
 
@@ -288,11 +325,10 @@ namespace WaveDisplay
                 markChunk[0] = (int)(chunkRate * e.X + chunkIndexRange[0]);
         }
 
-        public void marksDisplay(ref Bitmap bmpMark)
+        public float[] marksDisplay(ref Bitmap bmpMark)
         {
             float pxRate = (float)((float)pictureBox2.Width / (chunkIndexRange[1] + 1 - chunkIndexRange[0]));
-            float X1, X2;
-
+            float X1=0, X2=0;
             if (markChunk[0] >= chunkIndexRange[0] && markChunk[0] <= chunkIndexRange[1])
             {
                 X1 = (float)(pxRate * (markChunk[0]-chunkIndexRange[0]));
@@ -312,6 +348,7 @@ namespace WaveDisplay
                     drawMarkLine(X2, ref bmpMark);
                 }
             }
+            return new float[2]{X1,X2};
         }
 
         public void drawMarkLine(float Xlocation, ref Bitmap Layer)
@@ -368,6 +405,7 @@ namespace WaveDisplay
             {
                 using (FileStream wave_fs = new FileStream(filename, FileMode.Open, FileAccess.Read))
                 {
+                    var test = wave_fs.Length;
                     using (BinaryReader br = new BinaryReader(wave_fs))
                     {
                         wavHeader.riffID = br.ReadBytes(4);
@@ -383,9 +421,8 @@ namespace WaveDisplay
                         wavHeader.bitSample = br.ReadUInt16();
                         wavHeader.dataID = br.ReadBytes(4);
                         wavHeader.dataSize = br.ReadUInt32();
-
-                        //assume the file read in has 16 bit per sample
-                        for (int i = 0; i < wavHeader.dataSize / wavHeader.blockAlign; i++)
+            //assume the file read in has 16 bit per sample
+                        for (int i = 0; i < (wave_fs.Length- 44)/ wavHeader.blockAlign; i++)
                         {
                             if (wavHeader.nChannels == 1)
                                 leftData.Add(br.ReadInt16());
@@ -398,10 +435,12 @@ namespace WaveDisplay
 
                     }
                     string riff = Encoding.UTF8.GetString(wavHeader.riffID);
+                    string fmt = Encoding.UTF8.GetString(wavHeader.fmtID);
                     string format =Encoding.UTF8.GetString(wavHeader.fileFormat);
                     Console.WriteLine("wav File header " + riff + " " + format + " " + wavHeader.audioFormat.ToString());
                 }
-            }            
+            }   
+                     
             catch(FileNotFoundException e)
             {
                 MessageBox.Show("cannot open the file " + e.FileName);
@@ -509,12 +548,31 @@ namespace WaveDisplay
         {
             
             float colorFactor = input / maxData;
+            Color setColor1, setColor2;
             //Console.WriteLine("colorFactor: " + colorFactor.ToString());
-            int red=0,green=0,blue=0;
-            red = (int)(255 * Math.Pow(colorFactor, 0.35));
-            green = (int)(255 * Math.Pow(colorFactor, 0.4));
-            blue = (int)(255 * Math.Pow(colorFactor, 0.65));                      
-            return Color.FromArgb(255, red, green, blue);
+            int newIntensity = 0;
+            newIntensity = (int)(255 * colorFactor);
+            if (newIntensity >100)
+            {
+                setColor1 = Color.FromArgb(255, newIntensity * 2 / 5, newIntensity, newIntensity);
+                setColor2 = ControlPaint.Light(setColor1, 0.5f);
+            }
+            else if (newIntensity >= 40 && newIntensity <= 100)
+            {
+                setColor1 = Color.FromArgb(255, newIntensity * 2 / 5, newIntensity, newIntensity);
+                setColor2 = ControlPaint.Light(setColor1, 0.4f);
+            }
+            else if (newIntensity >= 20 && newIntensity <= 40)
+            {
+                setColor1 = Color.FromArgb(255, newIntensity * 2 / 5, newIntensity, newIntensity);
+                setColor2 = ControlPaint.Light(setColor1, 0.2f);
+            }
+            else
+            {
+                setColor1 = Color.FromArgb(255, newIntensity, newIntensity, newIntensity * 1 / 5);
+                setColor2 = Color.FromArgb(255, setColor1);
+            }
+            return setColor2;
 
         }
         public void STFT(List<short> inputValues, short No)
@@ -525,6 +583,7 @@ namespace WaveDisplay
             for (i = 0; i + No < count;i +=overLap)
             {
                 fftChunk =FFT( inputValues.GetRange(i, No));
+
                 stftWav.Add(fftChunk);
             }
             fftChunk = FFT(inputValues.GetRange(count - No, No));
@@ -538,70 +597,82 @@ namespace WaveDisplay
             int i;
             List<float> Real = inputValues.ConvertAll(y =>(float)y);
             List<float> Imagine = new List<float>();
-            for(i=0;i< inputValues.Count;i++)
+            for (i = 0; i < inputValues.Count; i++)
             {
                 Imagine.Add(0.0f);
             }
-            float Re,Im;
-            //do bit reversal
-            int k,j = 0;
-            for (i = 0; i < N - 1; i++)
+            //Naudio FFT test
+            Complex[] Data = new Complex[Real.Count] ;
+            for (int l = 0; l < Real.Count; l++)
             {
-                if (i < j)
-                {
-                    Re = Real[i];
-                    Im = Imagine[i];
-                    Real[i] = Real[j];
-                    Imagine[i] = Imagine[j];
-                    Real[j] = Re;
-                    Imagine[j] = Im;
-                }
-                k = N / 2;
-                while (k <= j)
-                {
-                    j -= k;
-                    k /= 2;
-                }
-                j += k;
+                Data[l].X = Real[l];
+                Data[l].Y = Imagine[l];
             }
 
-            //compute FFT
-            int m, b,x,a = 1;
-            float t1, t2;
-            float coef1=-1.0f;
-            float coef2=0.0f;
-            for (m = 0; m < n; m++)
-            {
-                b = a;
-                a *= 2;
-                float c= 1.0f;//value of cos(2pi/N), N is large
-                          //so this value reach to 1
-                float s=0.0f; //value of sin(2pi/N) reach to 0 when
-                          //N is large
-                //loop as decimation in Time
-                for (j = 0; j < b; j++)
-                {
-                    for (i = j; i < n; i += a)
-                    {
-                        x = i + b;
-                        t1 = c * Real[x] - s * Imagine[x];
-                        t2 = c * Imagine[x] + s * Real[x];
-                        Real[x] = Real[i] - t1;
-                        Imagine[x] = Imagine[i] - t2;
-                        Real[i] += t1;
-                        Imagine[i] += t2;
-                    }
-                    c = c*coef1-s*coef2;
-                    s = c * coef2 + s * coef1;                    
-                }
-                coef2 = (float)-Math.Sqrt((1.0f - coef1) / 2.0f);
-                coef1 = (float)Math.Sqrt((1.0f + coef1) / 2.0f);
-            }
+            NAudio.Dsp.FastFourierTransform.FFT(true, 10, Data);
+
+            ////
+
+            //float Re,Im;
+            ////do bit reversal
+            //int k,j = 0;
+            //for (i = 0; i < N - 1; i++)
+            //{
+            //    if (i < j)
+            //    {
+            //        Re = Real[i];
+            //        Im = Imagine[i];
+            //        Real[i] = Real[j];
+            //        Imagine[i] = Imagine[j];
+            //        Real[j] = Re;
+            //        Imagine[j] = Im;
+            //    }
+            //    k = N / 2;
+            //    while (k <= j)
+            //    {
+            //        j -= k;
+            //        k /= 2;
+            //    }
+            //    j += k;
+            //}
+
+            ////compute FFT
+            //int m, b,x,a = 1;
+            //float t1, t2;
+            //float coef1=-1.0f;
+            //float coef2=0.0f;
+            //for (m = 0; m < n; m++)
+            //{
+            //    b = a;
+            //    a *= 2;
+            //    float c= 1.0f;//value of cos(2pi/N), N is large
+            //              //so this value reach to 1
+            //    float s=0.0f; //value of sin(2pi/N) reach to 0 when
+            //              //N is large
+            //    //loop as decimation in Time
+            //    for (j = 0; j < b; j++)
+            //    {
+            //        for (i = j; i < n; i += a)
+            //        {
+            //            x = i + b;
+            //            t1 = c * Real[x] - s * Imagine[x];
+            //            t2 = c * Imagine[x] + s * Real[x];
+            //            Real[x] = Real[i] - t1;
+            //            Imagine[x] = Imagine[i] - t2;
+            //            Real[i] += t1;
+            //            Imagine[i] += t2;
+            //        }
+            //        c = c*coef1-s*coef2;
+            //        s = c * coef2 + s * coef1;                    
+            //    }
+            //    coef2 = (float)-Math.Sqrt((1.0f - coef1) / 2.0f);
+            //    coef1 = (float)Math.Sqrt((1.0f + coef1) / 2.0f);
+            //}
             List<float> output=new List<float>();
             float outputMag;
             for (i = 0; i < N / 2; i++)
             {
-                outputMag=(float)Math.Sqrt(Math.Pow(Real[i],2)+Math.Pow(Imagine[i],2));
+                outputMag=(float)Math.Sqrt(Math.Pow(Data[i].X,2)+Math.Pow(Data[i].Y,2));
                 output.Add(outputMag);
             }
             return output;
