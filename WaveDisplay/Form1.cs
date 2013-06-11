@@ -380,23 +380,9 @@ namespace WaveDisplay
 
         public void octDisplay(List<float> inputData, float frate)
         {
-            octForm.data = inputData;
-            /*
-            List<double[]> octaves=new List<double[]>();
-            List<double> tempList= new List<double>();
-            int index1,index2,i,j;
-            float C=130.81f/2, B=246.94f/2;
-            for (i = 0; i <5; i++)
-            {
-                C *= 2; B *= 2;
-                index1 = (int)(C / frate) + 1;
-                index2 = (int)(B / frate) + 1;
-                tempList=inputData.GetRange(index1, index2 - index1).ConvertAll(x=>(double)x);
-                octaves.Add(tempList.ToArray());
-                for(j=0;j<octaves[i].Length;j++)
-                    octForm.chart1.Series[i].Points.Add(octaves[i][j]);
-            }
-             * */
+            octForm.data = new List<float>(inputData);
+            octForm.rate = frate;
+          
         }
     }
 
