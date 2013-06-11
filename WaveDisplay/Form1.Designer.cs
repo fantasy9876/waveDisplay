@@ -40,6 +40,7 @@
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
             this.menuStrip1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -55,7 +56,7 @@
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(8, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(1701, 28);
+            this.menuStrip1.Size = new System.Drawing.Size(1262, 28);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -76,12 +77,12 @@
             // 
             // levelScrollBar
             // 
-            this.levelScrollBar.Anchor = System.Windows.Forms.AnchorStyles.Bottom;
+            this.levelScrollBar.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.levelScrollBar.LargeChange = 1;
-            this.levelScrollBar.Location = new System.Drawing.Point(209, 923);
+            this.levelScrollBar.Location = new System.Drawing.Point(190, 676);
             this.levelScrollBar.Maximum = 0;
             this.levelScrollBar.Name = "levelScrollBar";
-            this.levelScrollBar.Size = new System.Drawing.Size(1355, 24);
+            this.levelScrollBar.Size = new System.Drawing.Size(1068, 24);
             this.levelScrollBar.TabIndex = 2;
             this.levelScrollBar.Scroll += new System.Windows.Forms.ScrollEventHandler(this.levelScrollBar_Scroll);
             // 
@@ -91,9 +92,10 @@
             // 
             // markBut
             // 
+            this.markBut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.markBut.BackColor = System.Drawing.Color.Linen;
             this.markBut.Enabled = false;
-            this.markBut.Location = new System.Drawing.Point(12, 923);
+            this.markBut.Location = new System.Drawing.Point(4, 675);
             this.markBut.Name = "markBut";
             this.markBut.Size = new System.Drawing.Size(75, 25);
             this.markBut.TabIndex = 6;
@@ -103,12 +105,13 @@
             // 
             // viewOctBut
             // 
+            this.viewOctBut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.viewOctBut.BackColor = System.Drawing.Color.Linen;
-            this.viewOctBut.Location = new System.Drawing.Point(93, 923);
+            this.viewOctBut.Location = new System.Drawing.Point(88, 676);
             this.viewOctBut.Name = "viewOctBut";
             this.viewOctBut.Size = new System.Drawing.Size(99, 25);
             this.viewOctBut.TabIndex = 7;
-            this.viewOctBut.Text = "view octave";
+            this.viewOctBut.Text = "view Octave";
             this.viewOctBut.UseVisualStyleBackColor = false;
             this.viewOctBut.Click += new System.EventHandler(this.viewOctBut_Click);
             // 
@@ -119,17 +122,19 @@
             this.tabPage2.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage2.Name = "tabPage2";
             this.tabPage2.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage2.Size = new System.Drawing.Size(1693, 874);
+            this.tabPage2.Size = new System.Drawing.Size(1254, 615);
             this.tabPage2.TabIndex = 1;
             this.tabPage2.Text = "Spectrogram";
             this.tabPage2.UseVisualStyleBackColor = true;
             // 
             // pictureBox2
             // 
+            this.pictureBox2.Dock = System.Windows.Forms.DockStyle.Top;
             this.pictureBox2.Location = new System.Drawing.Point(4, 4);
             this.pictureBox2.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox2.Name = "pictureBox2";
-            this.pictureBox2.Size = new System.Drawing.Size(1685, 864);
+            this.pictureBox2.Size = new System.Drawing.Size(1246, 611);
+            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBox2.TabIndex = 0;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pictureBox2_MouseClick);
@@ -141,7 +146,7 @@
             this.tabPage1.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage1.Name = "tabPage1";
             this.tabPage1.Padding = new System.Windows.Forms.Padding(4);
-            this.tabPage1.Size = new System.Drawing.Size(1693, 874);
+            this.tabPage1.Size = new System.Drawing.Size(1254, 615);
             this.tabPage1.TabIndex = 0;
             this.tabPage1.Text = "Waveform";
             this.tabPage1.UseVisualStyleBackColor = true;
@@ -152,33 +157,43 @@
             this.pictureBox1.Location = new System.Drawing.Point(4, 4);
             this.pictureBox1.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox1.Name = "pictureBox1";
-            this.pictureBox1.Size = new System.Drawing.Size(1685, 866);
+            this.pictureBox1.Size = new System.Drawing.Size(1246, 607);
+            this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBox1.TabIndex = 0;
             this.pictureBox1.TabStop = false;
             // 
             // tabControl1
             // 
-            this.tabControl1.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.tabControl1.Controls.Add(this.tabPage1);
             this.tabControl1.Controls.Add(this.tabPage2);
-            this.tabControl1.Location = new System.Drawing.Point(0, 21);
+            this.tabControl1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.tabControl1.Location = new System.Drawing.Point(0, 28);
             this.tabControl1.Margin = new System.Windows.Forms.Padding(4);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(1701, 903);
+            this.tabControl1.Size = new System.Drawing.Size(1262, 644);
             this.tabControl1.TabIndex = 5;
             this.tabControl1.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControl1_Selected);
+            // 
+            // flowLayoutPanel1
+            // 
+            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
+            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+            this.flowLayoutPanel1.Size = new System.Drawing.Size(1262, 703);
+            this.flowLayoutPanel1.TabIndex = 8;
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1701, 953);
+            this.ClientSize = new System.Drawing.Size(1262, 703);
             this.Controls.Add(this.viewOctBut);
             this.Controls.Add(this.markBut);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.levelScrollBar);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.flowLayoutPanel1);
             this.MainMenuStrip = this.menuStrip1;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
@@ -187,8 +202,10 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
+            this.tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.tabPage1.ResumeLayout(false);
+            this.tabPage1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.tabControl1.ResumeLayout(false);
             this.ResumeLayout(false);
@@ -210,6 +227,7 @@
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
     }
 }
 
