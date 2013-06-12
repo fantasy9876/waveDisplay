@@ -34,13 +34,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NAudio, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\NAudio-Release\NAudio.dll</HintPath>
+    <Reference Include="NAudio">
+      <HintPath>res\NAudio.dll</HintPath>
     </Reference>
-    <Reference Include="NAudio.WindowsMediaFormat, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\NAudio-Release\NAudio.WindowsMediaFormat.dll</HintPath>
+    <Reference Include="NAudio.WindowsMediaFormat">
+      <HintPath>res\NAudio.WindowsMediaFormat.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
