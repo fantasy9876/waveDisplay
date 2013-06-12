@@ -22,15 +22,23 @@ namespace WaveDisplay
         private void Form3_Paint(object sender, PaintEventArgs e)
         {
             if (data != null)
-                for (int i=0; i<data.Count; i++)
+            {
+                float max = data.Max();
+                Bitmap bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+                using(Graphics g= Graphics.FromImage(bmp))
                 {
-                    float freq = i * (44000 / data.Count);
-                    double logfreq = Math.Log(freq, 2) - Math.Log(440, 2);
-                    var octave = Math.Floor(logfreq);
-                    var note = logfreq - octave;
+                    for (int i = 0; i < data.Count; i++)
+                    {
+                        float freq = i * (44000 / data.Count);
+                        double logfreq = Math.Log(freq, 2) - Math.Log(440, 2);
+                        var octave = Math.Floor(logfreq);
+                        var note = logfreq - octave;
 
-                    e.Graphics.DrawLine(Pens.Black, (float)(note * Width), (float)(500 + octave * 200), (float)(note * Width), (float)(500 + octave * 200 - data[i])); 
+                        g.DrawLine(Pens.Black, (float)(note * pictureBox1.Width), (float)(pictureBox1.Height - 10 - Math.Abs(octave) * 100), (float)(note * pictureBox1.Width), (float)(pictureBox1.Height - 10 - Math.Abs(octave) * 100 - data[i] * pictureBox1.Height / (5 * max)));
+                    }
+                    pictureBox1.Image = bmp;
                 }
+            }
         }
     }
 }
