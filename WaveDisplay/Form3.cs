@@ -25,18 +25,42 @@ namespace WaveDisplay
             {
                 float max = data.Max();
                 Bitmap bmp = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-                using(Graphics g= Graphics.FromImage(bmp))
+                using (Graphics g=Graphics.FromImage(bmp))
                 {
+                    drawNoteName(g, pictureBox1);
                     for (int i = 0; i < data.Count; i++)
                     {
-                        float freq = i * (44000 / data.Count);
-                        double logfreq = Math.Log(freq, 2) - Math.Log(440, 2);
+                        float freq = i * (44000/ (float)data.Count);
+                        double logfreq = Math.Log(freq, 2) - Math.Log(440, 2) + 9.0 / 12;
                         var octave = Math.Floor(logfreq);
-                        var note = logfreq - octave;
-
-                        g.DrawLine(Pens.Black, (float)(note * pictureBox1.Width), (float)(pictureBox1.Height - 10 - Math.Abs(octave) * 100), (float)(note * pictureBox1.Width), (float)(pictureBox1.Height - 10 - Math.Abs(octave) * 100 - data[i] * pictureBox1.Height / (5 * max)));
+                        if (octave >= -1 && octave <= 4)
+                        {
+                            var note = logfreq - octave;
+                            var oct_base_pos = (pictureBox1.Height - 20) * (1 - (octave + 1) / 6);
+                            g.DrawLine(Pens.Black, (float)(note * pictureBox1.Width), (float)oct_base_pos, (float)(note * pictureBox1.Width), (float)(oct_base_pos - data[i] * (pictureBox1.Height - 20) / (6 * max)));
+                        }
                     }
-                    pictureBox1.Image = bmp;
+                }
+                pictureBox1.Image = bmp;
+            }
+        }
+
+        private void Form3_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            e.Cancel=true;
+            this.Hide();
+        }
+
+        public void drawNoteName(Graphics G, PictureBox pic)
+        {
+            string[] noteSequence = new string[12] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+            for (int i = 0; i <= 5; i++)
+            {
+                var noteBase = (pic.Height - 20) * (float)((1 - (float)i/ 6));
+                G.DrawLine(Pens.Black, 0, (float)noteBase, pic.Width, (float)noteBase);
+                for (int j = 0; j <= 11; j++)
+                {
+                    G.DrawString(noteSequence[j]+(i+3).ToString(), new Font("Arial", 10), new SolidBrush(Color.Black), new PointF(j*pic.Width/12, noteBase));
                 }
             }
         }

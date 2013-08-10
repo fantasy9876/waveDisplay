@@ -258,65 +258,6 @@ namespace WaveDisplay
 
             NAudio.Dsp.FastFourierTransform.FFT(true, n, Data);
 
-            ////
-
-            //float Re,Im;
-            ////do bit reversal
-            //int k,j = 0;
-            //for (i = 0; i < N - 1; i++)
-            //{
-            //    if (i < j)
-            //    {
-            //        Re = Real[i];
-            //        Im = Imagine[i];
-            //        Real[i] = Real[j];
-            //        Imagine[i] = Imagine[j];
-            //        Real[j] = Re;
-            //        Imagine[j] = Im;
-            //    }
-            //    k = N / 2;
-            //    while (k <= j)
-            //    {
-            //        j -= k;
-            //        k /= 2;
-            //    }
-            //    j += k;
-            //}
-
-            ////compute FFT
-            //int m, b,x,a = 1;
-            //float t1, t2;
-            //float coef1=-1.0f;
-            //float coef2=0.0f;
-            //float c,s,r;
-            //for (m = 0; m < n; m++)
-            //{
-            //    b = a;
-            //    a *= 2;
-            //    c= 1.0f;//value of cos(2pi/N), N is large
-            //              //so this value reach to 1
-            //    s=0.0f; //value of sin(2pi/N) reach to 0 when
-            //              //N is large
-            //    //loop as decimation in Time
-            //    for (j = 0; j < b; j++)
-            //    {
-            //        for (i = j; i < n; i += a)
-            //        {
-            //            x = i + b;
-            //            t1 = c * Real[x] - s * Imagine[x];
-            //            t2 = c * Imagine[x] + s * Real[x];
-            //            Real[x] = Real[i] - t1;
-            //            Imagine[x] = Imagine[i] - t2;
-            //            Real[i] += t1;
-            //            Imagine[i] += t2;
-            //        }
-            //        r = c*coef1-s*coef2;
-            //        s = c * coef2 + s * coef1;   
-            //        c=r;     
-            //    }
-            //    coef2 = (float)-Math.Sqrt((1.0f - coef1) / 2.0f);
-            //    coef1 = (float)Math.Sqrt((1.0f + coef1) / 2.0f);
-            //}
             List<float> output = new List<float>();
             float outputMag;
             for (i = 0; i < N / 2; i++)

@@ -21,10 +21,10 @@ namespace WaveDisplay
         public static string chosenFile = "";
         public static int[] chunkIndexRange=new int[2];
         public static bool mark=false, view=false;
-        public static Bitmap bmpSpectro = new Bitmap(1, 1);
         public static int[] markChunk = { 0, 0 };
         public const int stftChunkSize = 1024;
         Form3 octForm = new Form3();
+        public static Bitmap bmpSpectro = new Bitmap(1, 1);
 
         public Form1()
         {
@@ -301,7 +301,6 @@ namespace WaveDisplay
             timeIndex[1] = markChunk[1] * stftChunkSize / 4 + stftChunkSize;
             
             view = true;            
-            octForm.Show();
             List<short> octTimeData= waveIn.leftData.GetRange(timeIndex[0],(timeIndex[1]-timeIndex[0]+1));
                    
             //TODO: 
@@ -318,6 +317,8 @@ namespace WaveDisplay
             List<float> octFFT = waveIn.FFT(octTimeData);
             float frate = (float)(waveIn.wavHeader.sampleRate) / (octFFT.Count * 2);
             octDisplay(octFFT, frate);
+            octForm.Invalidate();
+            octForm.Show();
         }
 
         private void pictureBox2_MouseClick(object sender, MouseEventArgs e)
@@ -383,6 +384,33 @@ namespace WaveDisplay
             octForm.data = new List<float>(inputData);
             octForm.rate = frate;
           
+        }
+
+        private void pictureBox2_SizeChanged(object sender, EventArgs e)
+        {
+            bmpSpectro = waveZoom.spectrogram(waveZoom.stftWav, pictureBox2);
+            Bitmap bmpOut = new Bitmap(pictureBox2.Width, pictureBox2.Height);
+            Bitmap bmpMark = new Bitmap(bmpOut);
+            marksDisplay(ref bmpMark);
+            using (Graphics G = Graphics.FromImage(bmpOut))
+            {
+                G.DrawImage(bmpSpectro, 0, 0);
+                G.DrawImage(bmpMark, 0, 0);
+
+            }
+            pictureBox2.Image = bmpOut;
+
+        }
+
+        private void pictureBox1_SizeChanged(object sender, EventArgs e)
+        {
+            if (levelScrollBar.Maximum == 0)
+                waveIn.DrawAudio(waveIn.leftData, pictureBox1);
+            else
+            {
+                waveZoom.leftData = waveIn.leftData.GetRange(levelScrollBar.Value, CurWavCount);
+                waveZoom.DrawAudio(waveZoom.leftData, pictureBox1);
+            }
         }
     }
 
