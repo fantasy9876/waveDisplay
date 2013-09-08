@@ -72,11 +72,24 @@ namespace WaveDisplay
                         for (int i = 0; i < (wave_fs.Length - 44) / wavHeader.blockAlign; i++)
                         {
                             if (wavHeader.nChannels == 1)
-                                leftData.Add(br.ReadInt16());
+                            {
+                                if (wavHeader.bitSample == 8)
+                                    leftData.Add((short)((br.ReadByte()-128)*65536/256));
+                                else
+                                    leftData.Add(br.ReadInt16());
+                            }
                             else if (wavHeader.nChannels == 2)
                             {
-                                leftData.Add(br.ReadInt16());
-                                rightData.Add(br.ReadInt16());
+                                if (wavHeader.bitSample == 8)
+                                {
+                                    leftData.Add((short)(br.ReadByte()));
+                                    rightData.Add((short)(br.ReadByte()));
+                                }
+                                else
+                                {
+                                    leftData.Add(br.ReadInt16());
+                                    rightData.Add(br.ReadInt16());
+                                }
                             }
                         }
 
@@ -142,7 +155,7 @@ namespace WaveDisplay
             return bmp;
         }
 
-        public List<Int16> waveNormalize(List<short> inputValues, int pxRangeX, int pxRangeY)
+        public List<Int16> waveNormalize(List<short> inputValues, int pxRangeX, int pxRangeY) //normalized data to fit in window
         {
             int dataPerPixel = inputValues.Count / pxRangeX;
             List<short> tempValues = new List<short>();
@@ -160,19 +173,19 @@ namespace WaveDisplay
             return outputValues;
         }
 
-        public Bitmap spectrogram(List<List<float>> inputValues, PictureBox picdraw)
+        public Bitmap spectrogram(List<List<float>> inputValues, PictureBox picdraw,int frange)
         {
             int NoFFt = inputValues[0].Count;
             int i, j;
-
             Bitmap bmp = new Bitmap(picdraw.Width, picdraw.Height);
-            float maxData = inputValues.Max(column => column.Max());
-            Console.WriteLine("maxData: " + maxData.ToString());
+            List<float> maxRange = new List<float>();
+            float maxData = inputValues.Max(column => column.GetRange(0,frange).Max());
+            maxData=(float)(Math.Log10(maxData));
             RectangleF rectF = new RectangleF();
             SizeF rectFsize = new SizeF();
             PointF coordF = new PointF();
             float Xscale = (float)picdraw.Width / inputValues.Count;
-            float Yscale = (float)picdraw.Height / (NoFFt / 2);
+            float Yscale = (float)picdraw.Height / frange;
             rectFsize = new SizeF(Xscale, Yscale);
 
             using (Graphics g = Graphics.FromImage(bmp))
@@ -180,11 +193,13 @@ namespace WaveDisplay
                 g.Clear(Color.Black);
                 for (i = 0; i < inputValues.Count; i++)
                 {
-                    for (j = 0; j < NoFFt / 2; j++)
+                    for (j = 0; j < frange; j++)
                     {
                         coordF = new PointF(i * Xscale, j * Yscale);
                         rectF = new RectangleF(coordF, rectFsize);
-                        g.FillRectangle(new SolidBrush(getColor(inputValues[i][(NoFFt / 2 - 1) - j], maxData)), rectF);
+                        float colorData = inputValues[i][(NoFFt / 2 - 1) - j];
+                        colorData = (colorData > 1) ? (float)Math.Log10(colorData) : 0;
+                        g.FillRectangle(new SolidBrush(getColor(colorData, maxData)), rectF);
                     }
                 }
             }
@@ -195,31 +210,23 @@ namespace WaveDisplay
         {
 
             float colorFactor = input / maxData;
-            Color setColor1, setColor2;
+            Color setColor1;
             //Console.WriteLine("colorFactor: " + colorFactor.ToString());
             int newIntensity = 0;
             newIntensity = (int)(255 * colorFactor);
-            if (newIntensity > 100)
+            if (newIntensity > 50)
             {
-                setColor1 = Color.FromArgb(255, newIntensity * 2 / 5, newIntensity, newIntensity);
-                setColor2 = ControlPaint.Light(setColor1, 0.5f);
+                setColor1 = Color.FromArgb(255, newIntensity, newIntensity, newIntensity);
+                //setColor2 = ControlPaint.Light(setColor1, 0.8f);
             }
-            else if (newIntensity >= 40 && newIntensity <= 100)
-            {
-                setColor1 = Color.FromArgb(255, newIntensity * 2 / 5, newIntensity, newIntensity);
-                setColor2 = ControlPaint.Light(setColor1, 0.4f);
-            }
-            else if (newIntensity >= 20 && newIntensity <= 40)
-            {
-                setColor1 = Color.FromArgb(255, newIntensity * 2 / 5, newIntensity, newIntensity);
-                setColor2 = ControlPaint.Light(setColor1, 0.2f);
-            }
+
             else
             {
-                setColor1 = Color.FromArgb(255, newIntensity, newIntensity, newIntensity * 1 / 5);
-                setColor2 = Color.FromArgb(255, setColor1);
+                setColor1 = Color.FromArgb(255, newIntensity , newIntensity , 0);
+                //setColor2 = ControlPaint.Light(setColor1, 0.6f);
             }
-            return setColor2;
+
+            return setColor1;
 
         }
         public void STFT(List<short> inputValues, short No)
@@ -266,6 +273,42 @@ namespace WaveDisplay
                 output.Add(outputMag);
             }
             return output;
+        }
+
+        public string noteIdentify(List<float> fftInput, int scale)
+        {
+            string[] noteSequence = new string[12] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+            List<float> samples = new List<float>(600);
+            for (int i = 0; i < 600; i++)
+            {
+                samples.Add(0);
+            }
+            List<float> means = new List<float>(12);
+            for (int i = 0; i < 12; i++)
+            {
+                means.Add(0);
+            }
+
+            for (int i = 0; i < fftInput.Count; i++)
+            {
+                float freq = i * (44000 / (float)fftInput.Count);
+                double logfreq = Math.Log(freq, 2) - Math.Log(440, 2) + 9.5 / 12;
+                var octave = Math.Floor(logfreq);
+                if (octave >= -1 && octave <= 4)
+                {
+                    var note = logfreq - octave;
+                    int index = (int)(note * 600);
+                    samples[index] += fftInput[i];
+                }
+            }
+            for (int j = 0; j < 12; j++)
+            {
+                List<float> pack= samples.GetRange(j*50,50);
+                means[j] = pack.Average();       
+                pack.Clear();
+            }
+            int maxIndex = means.IndexOf(means.Max());
+            return noteSequence[maxIndex];
         }
     }
 }

@@ -31,16 +31,19 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.audioFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.musicXMLFileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.levelScrollBar = new System.Windows.Forms.HScrollBar();
             this.OpenFD = new System.Windows.Forms.OpenFileDialog();
-            this.markBut = new System.Windows.Forms.Button();
-            this.viewOctBut = new System.Windows.Forms.Button();
+            this.undoBut = new System.Windows.Forms.Button();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.pictureBox2 = new System.Windows.Forms.PictureBox();
             this.tabPage1 = new System.Windows.Forms.TabPage();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+            this.Pred_but = new System.Windows.Forms.Button();
+            this.ReXml_But = new System.Windows.Forms.Button();
+            this.noteSpectr_but = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).BeginInit();
@@ -70,21 +73,37 @@
             // 
             // openToolStripMenuItem
             // 
+            this.openToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.audioFileToolStripMenuItem,
+            this.musicXMLFileToolStripMenuItem});
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.Size = new System.Drawing.Size(114, 24);
             this.openToolStripMenuItem.Text = "Open";
-            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
+            // 
+            // audioFileToolStripMenuItem
+            // 
+            this.audioFileToolStripMenuItem.Name = "audioFileToolStripMenuItem";
+            this.audioFileToolStripMenuItem.Size = new System.Drawing.Size(174, 24);
+            this.audioFileToolStripMenuItem.Text = "Audio File";
+            this.audioFileToolStripMenuItem.Click += new System.EventHandler(this.audioFileToolStripMenuItem_Click);
+            // 
+            // musicXMLFileToolStripMenuItem
+            // 
+            this.musicXMLFileToolStripMenuItem.Name = "musicXMLFileToolStripMenuItem";
+            this.musicXMLFileToolStripMenuItem.Size = new System.Drawing.Size(174, 24);
+            this.musicXMLFileToolStripMenuItem.Text = "Music XML file";
+            this.musicXMLFileToolStripMenuItem.Click += new System.EventHandler(this.musicXMLFileToolStripMenuItem_Click);
             // 
             // levelScrollBar
             // 
             this.levelScrollBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.levelScrollBar.LargeChange = 1;
-            this.levelScrollBar.Location = new System.Drawing.Point(189, 676);
+            this.levelScrollBar.Location = new System.Drawing.Point(369, 675);
             this.levelScrollBar.Margin = new System.Windows.Forms.Padding(27, 12, 27, 12);
             this.levelScrollBar.Maximum = 0;
             this.levelScrollBar.Name = "levelScrollBar";
-            this.levelScrollBar.Size = new System.Drawing.Size(1068, 24);
+            this.levelScrollBar.Size = new System.Drawing.Size(884, 24);
             this.levelScrollBar.TabIndex = 2;
             this.levelScrollBar.Scroll += new System.Windows.Forms.ScrollEventHandler(this.levelScrollBar_Scroll);
             // 
@@ -92,32 +111,19 @@
             // 
             this.OpenFD.FileName = "openFileDialog1";
             // 
-            // markBut
+            // undoBut
             // 
-            this.markBut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.markBut.BackColor = System.Drawing.Color.Linen;
-            this.markBut.Enabled = false;
-            this.markBut.Location = new System.Drawing.Point(4, 674);
-            this.markBut.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.markBut.Name = "markBut";
-            this.markBut.Size = new System.Drawing.Size(75, 25);
-            this.markBut.TabIndex = 6;
-            this.markBut.Text = "Mark";
-            this.markBut.UseVisualStyleBackColor = false;
-            this.markBut.Click += new System.EventHandler(this.markBut_Click);
-            // 
-            // viewOctBut
-            // 
-            this.viewOctBut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.viewOctBut.BackColor = System.Drawing.Color.Linen;
-            this.viewOctBut.Location = new System.Drawing.Point(88, 676);
-            this.viewOctBut.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.viewOctBut.Name = "viewOctBut";
-            this.viewOctBut.Size = new System.Drawing.Size(99, 25);
-            this.viewOctBut.TabIndex = 7;
-            this.viewOctBut.Text = "view Octave";
-            this.viewOctBut.UseVisualStyleBackColor = false;
-            this.viewOctBut.Click += new System.EventHandler(this.viewOctBut_Click);
+            this.undoBut.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.undoBut.BackColor = System.Drawing.Color.Linen;
+            this.undoBut.Enabled = false;
+            this.undoBut.Location = new System.Drawing.Point(4, 674);
+            this.undoBut.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.undoBut.Name = "undoBut";
+            this.undoBut.Size = new System.Drawing.Size(60, 25);
+            this.undoBut.TabIndex = 6;
+            this.undoBut.Text = "Undo";
+            this.undoBut.UseVisualStyleBackColor = false;
+            this.undoBut.Click += new System.EventHandler(this.undoBut_Click);
             // 
             // tabPage2
             // 
@@ -138,7 +144,6 @@
             this.pictureBox2.Margin = new System.Windows.Forms.Padding(4);
             this.pictureBox2.Name = "pictureBox2";
             this.pictureBox2.Size = new System.Drawing.Size(1245, 607);
-            this.pictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.AutoSize;
             this.pictureBox2.TabIndex = 0;
             this.pictureBox2.TabStop = false;
             this.pictureBox2.SizeChanged += new System.EventHandler(this.pictureBox2_SizeChanged);
@@ -183,26 +188,54 @@
             this.tabControl1.TabIndex = 5;
             this.tabControl1.Selected += new System.Windows.Forms.TabControlEventHandler(this.tabControl1_Selected);
             // 
-            // flowLayoutPanel1
+            // Pred_but
             // 
-            this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.flowLayoutPanel1.Location = new System.Drawing.Point(0, 0);
-            this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-            this.flowLayoutPanel1.Size = new System.Drawing.Size(1261, 703);
-            this.flowLayoutPanel1.TabIndex = 8;
+            this.Pred_but.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.Pred_but.BackColor = System.Drawing.Color.Aquamarine;
+            this.Pred_but.Location = new System.Drawing.Point(70, 674);
+            this.Pred_but.Name = "Pred_but";
+            this.Pred_but.Size = new System.Drawing.Size(75, 25);
+            this.Pred_but.TabIndex = 9;
+            this.Pred_but.Text = "Predict";
+            this.Pred_but.UseVisualStyleBackColor = false;
+            this.Pred_but.Click += new System.EventHandler(this.Pred_but_Click);
+            // 
+            // ReXml_But
+            // 
+            this.ReXml_But.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.ReXml_But.BackColor = System.Drawing.Color.PowderBlue;
+            this.ReXml_But.Location = new System.Drawing.Point(151, 674);
+            this.ReXml_But.Name = "ReXml_But";
+            this.ReXml_But.Size = new System.Drawing.Size(98, 25);
+            this.ReXml_But.TabIndex = 10;
+            this.ReXml_But.Text = "Refresh XML";
+            this.ReXml_But.UseVisualStyleBackColor = false;
+            this.ReXml_But.Click += new System.EventHandler(this.ReXml_but_Click);
+            // 
+            // noteSpectr_but
+            // 
+            this.noteSpectr_but.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.noteSpectr_but.BackColor = System.Drawing.Color.PaleGreen;
+            this.noteSpectr_but.Location = new System.Drawing.Point(255, 674);
+            this.noteSpectr_but.Name = "noteSpectr_but";
+            this.noteSpectr_but.Size = new System.Drawing.Size(110, 25);
+            this.noteSpectr_but.TabIndex = 11;
+            this.noteSpectr_but.Text = "Note Spectrum";
+            this.noteSpectr_but.UseVisualStyleBackColor = false;
+            this.noteSpectr_but.Click += new System.EventHandler(this.noteSpectr_but_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1261, 703);
-            this.Controls.Add(this.viewOctBut);
-            this.Controls.Add(this.markBut);
+            this.Controls.Add(this.noteSpectr_but);
+            this.Controls.Add(this.ReXml_But);
+            this.Controls.Add(this.Pred_but);
+            this.Controls.Add(this.undoBut);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.levelScrollBar);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.flowLayoutPanel1);
             this.MainMenuStrip = this.menuStrip1;
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Form1";
@@ -211,7 +244,6 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.tabPage2.ResumeLayout(false);
-            this.tabPage2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox2)).EndInit();
             this.tabPage1.ResumeLayout(false);
             this.tabPage1.PerformLayout();
@@ -229,14 +261,17 @@
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.HScrollBar levelScrollBar;
         private System.Windows.Forms.OpenFileDialog OpenFD;
-        private System.Windows.Forms.Button markBut;
-        private System.Windows.Forms.Button viewOctBut;
+        private System.Windows.Forms.Button undoBut;
         private System.Windows.Forms.TabPage tabPage2;
         private System.Windows.Forms.PictureBox pictureBox2;
         private System.Windows.Forms.TabPage tabPage1;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+        private System.Windows.Forms.Button Pred_but;
+        private System.Windows.Forms.ToolStripMenuItem audioFileToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem musicXMLFileToolStripMenuItem;
+        private System.Windows.Forms.Button ReXml_But;
+        private System.Windows.Forms.Button noteSpectr_but;
     }
 }
 
