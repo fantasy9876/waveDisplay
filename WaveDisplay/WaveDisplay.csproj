@@ -40,6 +40,9 @@
     <Reference Include="NAudio.WindowsMediaFormat">
       <HintPath>res\NAudio.WindowsMediaFormat.dll</HintPath>
     </Reference>
+    <Reference Include="PSAMControlLibrary">
+      <HintPath>..\..\..\PSAMControlLibrary\PSAMControlLibrary\PSAMControlLibrary\bin\Release\PSAMControlLibrary.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Windows.Forms.DataVisualization" />
@@ -53,6 +56,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="feedbackViewer.cs" />
     <Compile Include="Form3.cs">
       <SubType>Form</SubType>
     </Compile>

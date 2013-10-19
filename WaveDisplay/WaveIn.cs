@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
+using System.Windows.Forms.DataVisualization.Charting;
 using System.IO;
 using NAudio.Dsp;
 
@@ -14,6 +15,14 @@ namespace WaveDisplay
 {
     public class WaveIn
     {
+        public struct notePredict
+        {
+            public string NoteName;
+            public short octave;
+            public int percentage;
+            public float duration;
+        }
+        public List<notePredict> notePredictList=new List<notePredict>();
         public struct waveHeader
         {
             public byte[] riffID;
@@ -32,7 +41,9 @@ namespace WaveDisplay
 
         public List<short> leftData = new List<short>(); //Aussme if filewave is mono, use this leftData to extract data
         public List<short> rightData = new List<short>();
-        public List<List<float>> stftWav = new List<List<float>>();
+        public List<List<float>> stftWav = new List<List<float>>(); //contain all fft chunks to form STFT data
+        public List<double> spectroPow = new List<double>(); //List with each element is the total power of each STFT chunk 
+
         public WaveIn(WaveIn previousWave)
         {
             leftData = previousWave.leftData;
@@ -171,33 +182,44 @@ namespace WaveDisplay
                 index += 2;
             }
             return outputValues;
+        }      
+
+        public void spectroDiffDraw(Chart outputChart)
+        {
+            outputChart.Series.Clear();
+            outputChart.Series.Add("corrSeries");
+            outputChart.Series["corrSeries"].ChartType = SeriesChartType.FastLine;
+            foreach (double item in spectroPow)
+            {
+                outputChart.Series["corrSeries"].Points.AddY((double)item);
+            }
         }
 
-        public Bitmap spectrogram(List<List<float>> inputValues, PictureBox picdraw,int frange)
+        public Bitmap spectrogram( PictureBox picdraw,int frange)
         {
-            int NoFFt = inputValues[0].Count;
+            int NoFFt = stftWav[0].Count;
             int i, j;
             Bitmap bmp = new Bitmap(picdraw.Width, picdraw.Height);
             List<float> maxRange = new List<float>();
-            float maxData = inputValues.Max(column => column.GetRange(0,frange).Max());
+            float maxData = stftWav.Max(column => column.GetRange(0, frange).Max());
             maxData=(float)(Math.Log10(maxData));
             RectangleF rectF = new RectangleF();
             SizeF rectFsize = new SizeF();
             PointF coordF = new PointF();
-            float Xscale = (float)picdraw.Width / inputValues.Count;
+            float Xscale = (float)picdraw.Width / stftWav.Count;
             float Yscale = (float)picdraw.Height / frange;
             rectFsize = new SizeF(Xscale, Yscale);
 
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.Black);
-                for (i = 0; i < inputValues.Count; i++)
+                for (i = 0; i < stftWav.Count; i++)
                 {
-                    for (j = 0; j < frange; j++)
+                    for (j = 0; j < frange; j++)  //higher frequencies are plotted from the bottom of screen
                     {
                         coordF = new PointF(i * Xscale, j * Yscale);
                         rectF = new RectangleF(coordF, rectFsize);
-                        float colorData = inputValues[i][(NoFFt / 2 - 1) - j];
+                        float colorData = stftWav[i][(NoFFt / 2 - 1) - j];
                         colorData = (colorData > 1) ? (float)Math.Log10(colorData) : 0;
                         g.FillRectangle(new SolidBrush(getColor(colorData, maxData)), rectF);
                     }
@@ -229,19 +251,62 @@ namespace WaveDisplay
             return setColor1;
 
         }
+        
+
         public void STFT(List<short> inputValues, short No)
         {
             int i, overLap = No / 4;
             List<float> fftChunk = new List<float>();
+            List<float> fftChunktmp;
             int count = inputValues.Count;
             for (i = 0; i + No < count; i += overLap)
             {
-                fftChunk = FFT(inputValues.GetRange(i, No));
+                fftChunktmp = FFT(inputValues.GetRange(i, No));
+                fftChunk = fftChunktmp.GetRange(0, fftChunktmp.Count / 2);
 
                 stftWav.Add(fftChunk);
             }
-            fftChunk = FFT(inputValues.GetRange(count - No, No));
+            fftChunktmp = FFT(inputValues.GetRange(count - No, No)); ;
+            fftChunk = fftChunktmp.GetRange(0, fftChunktmp.Count / 2);
             stftWav.Add(fftChunk);
+
+            for (int n = 0; n < stftWav.Count; n++)
+            {
+               
+                //int fstart = (int)(100 / (wavHeader.sampleRate / No));
+                //int fend = (int)(4400 / (wavHeader.sampleRate / No));
+                //List<double> tempList = new List<double>();
+                //for (int k = fstart; k < fend; k++) //onset detection function focus on frequency between 100 and 4400 Viloin range
+                //{                                   //this range also act like a low pass filter, smooth the detection output curve
+                //    //1st option: calculate the spectral difference for onset detection 
+                //    //if (n <= 3)
+                //    //{
+                //    //    double Xmax = stftWav[n - 1].GetRange(k - 1, 3).Max();
+                //    //    tempList.Add(Math.Pow(stftWav[n][k], 2) - Math.Pow(Xmax, 2));
+                //    //}
+                //    //else
+                //    //{
+                //    //    double Xmax = stftWav[n - 3].GetRange(k - 1, 3).Max();
+                //    //    tempList.Add(Math.Pow(stftWav[n][k], 2) - Math.Pow(Xmax, 2));
+                //    //}
+                //    //2nd options: use high frequency content method
+                //    tempList.Add(Math.Pow(k,2)*Math.Pow(stftWav[n][k],2));
+                //}
+
+                double sum = stftWav[n].Sum(X=>Math.Pow(X,2));
+                spectroPow.Add(sum);                            
+            }
+            //Apply moving average filter to smooth the curve   
+            double[] pad = new double[5];
+            spectroPow.InsertRange(0, pad);
+            spectroPow.AddRange(pad);
+            for (int m = 5; m < spectroPow.Count - 5; m++)
+            {
+                var newVal = spectroPow.GetRange(m - 5, 10).Average();
+                spectroPow[m] = newVal;
+            }
+            spectroPow.RemoveRange(0, 5);
+            spectroPow.RemoveRange(spectroPow.Count - 5, 5);
 
         }
         public List<float> FFT(List<short> inputValues)
@@ -267,7 +332,7 @@ namespace WaveDisplay
 
             List<float> output = new List<float>();
             float outputMag;
-            for (i = 0; i < N / 2; i++)
+            for (i = 0; i < N ; i++)
             {
                 outputMag = (float)Math.Sqrt(Math.Pow(Data[i].X, 2) + Math.Pow(Data[i].Y, 2));
                 output.Add(outputMag);
@@ -275,40 +340,143 @@ namespace WaveDisplay
             return output;
         }
 
-        public string noteIdentify(List<float> fftInput, int scale)
-        {
-            string[] noteSequence = new string[12] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
-            List<float> samples = new List<float>(600);
-            for (int i = 0; i < 600; i++)
+        //public List<int[]> markNotes()
+        //{
+        //    List<int[]> noteMarkedList = new List<int[]>(); //each int[] is a pair of the STFT chunk indices of a note
+        //    List<double> sortedSpectroPow=spectroPow.OrderBy(data =>data).ToList();
+        //    var rest = sortedSpectroPow[(int)(0.01 * sortedSpectroPow.Count)];
+        //    int isStart = 0;
+        //    for(int i=0; i<spectroPow.Count-1;i++)
+        //    {
+        //        var markPairIdx=new int[2];
+        //        //the algorithm will ignore any chunk index that represents rest
+        //        if (spectroPow[i] > rest)
+        //        {
+                  
+                        
+                    
+        //        }
+                
+
+        //    }
+        //    return noteMarkedList;
+        //}
+
+        public List<float> autocorrelation(List<short> dataInput, uint sampleRate)
+        { 
+            //extend the length of dataInput to further 1/2 of its length by zeros padding, dataInput is time inteval values
+            List<float> FFToutput = FFT(dataInput);
+            int N = FFToutput.Count; //assume N =2^n
+            float fres = sampleRate /(float) N;
+            int[] cutoffIdx = new int[2];
+
+            //bandpass filter, only keep frequency between 195 to 4400Hz
+            cutoffIdx[0] = (int)(195 / fres);
+            cutoffIdx[1] = (int)(4400 / fres);
+            for (int a = 0; a < cutoffIdx[0]; a++)
             {
-                samples.Add(0);
+                FFToutput[a] = 0;
             }
-            List<float> means = new List<float>(12);
-            for (int i = 0; i < 12; i++)
+            for (int b = cutoffIdx[1]; b < FFToutput.Count; b++)
             {
-                means.Add(0);
+                FFToutput[b] = 0;
+            }
+            int n = (int)(Math.Log(N) / Math.Log(2));
+            int i;
+            List<float> IReal = new List<float>(FFToutput);
+            List<float> IImagine = new List<float>();
+            for (i = 0; i < dataInput.Count; i++)
+            {
+                IImagine.Add(0.0f);
+            }
+            //Naudio FFT test
+            Complex[] IData = new Complex[IReal.Count];
+            for (int l = 0; l < IReal.Count; l++)
+            {
+                IData[l].X = IReal[l];
+                IData[l].Y = IImagine[l];
             }
 
-            for (int i = 0; i < fftInput.Count; i++)
+            NAudio.Dsp.FastFourierTransform.FFT(false, n, IData);
+
+            List<float> Ioutput = new List<float>();
+            float IoutputMag;
+            for (i = 0; i < N; i++)
             {
-                float freq = i * (44000 / (float)fftInput.Count);
-                double logfreq = Math.Log(freq, 2) - Math.Log(440, 2) + 9.5 / 12;
-                var octave = Math.Floor(logfreq);
-                if (octave >= -1 && octave <= 4)
-                {
-                    var note = logfreq - octave;
-                    int index = (int)(note * 600);
-                    samples[index] += fftInput[i];
-                }
+                IoutputMag = (float)Math.Sqrt(Math.Pow(IData[i].X, 2) + Math.Pow(IData[i].Y, 2));
+                Ioutput.Add(IoutputMag);
             }
-            for (int j = 0; j < 12; j++)
+            return Ioutput;
+        }
+
+        public notePredict noteIdentify(List<float> corrInput,uint sampleRate, int duration)
+        {
+            string[] noteSequence = new string[12] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+            float corrMax = corrInput.Max();
+            //Get data from the range 196kHZ to 4400Khz range of violin data
+            List<float> localData = corrInput.GetRange((int)(sampleRate / 4400), (int)(sampleRate / 196-sampleRate/4400));
+
+            //sort data from smallest to largest, then find median 
+            List<float> sortedData = localData.OrderBy(data => data).ToList();
+            float threshold = sortedData[(int)(0.95 * sortedData.Count)]; //peak usually lies at 95% of data
+            
+            int i = 0;
+
+            while (corrInput[i] > threshold)  //remove all of high correlation value at the beginning 
+                i++;
+            while (corrInput[i] <= threshold) //pass threshold value 
+                i++;
+            List<float> peakData = new List<float>();
+            int j = i;
+            while (corrInput[i] > threshold)
             {
-                List<float> pack= samples.GetRange(j*50,50);
-                means[j] = pack.Average();       
-                pack.Clear();
+                peakData.Add(corrInput[i]);
+                i++;
             }
-            int maxIndex = means.IndexOf(means.Max());
-            return noteSequence[maxIndex];
+            int peakIndex=peakData.IndexOf(peakData.Max())+j;
+            float fpeak = (float)sampleRate / peakIndex;
+            double nlogfreq = Math.Log(fpeak/440,2)*12+9; //value in term on n/12 + 9 that makes C4 has n=0;
+            int noteIndex = (int) Math.Round(nlogfreq); //return the integer term of n 
+         
+            notePredict note = new notePredict(); 
+            note.percentage = (int)(100*(nlogfreq-noteIndex));
+            if (noteIndex >= 0 && noteIndex < 12)
+            {
+                note.NoteName = noteSequence[noteIndex];
+                note.octave=4;
+
+            }
+            else if (noteIndex < 0 && noteIndex >= -12)
+            {
+                note.NoteName = noteSequence[noteIndex+12];
+                note.octave = 3;
+            }
+            else if (noteIndex >= 12 && noteIndex < 24)
+            {
+                note.NoteName = noteSequence[noteIndex -12];
+                note.octave = 5;
+            }
+
+            else if (noteIndex >= 24 && noteIndex < 36)
+            {
+                note.NoteName = noteSequence[noteIndex -24 ];
+                note.octave = 6;
+            }
+
+            else if (noteIndex >= 36 && noteIndex < 48)
+            {
+                note.NoteName = noteSequence[noteIndex -36];
+                note.octave = 7;
+            }
+            else if (noteIndex >= 48 && noteIndex < 60)
+            {
+                note.NoteName = noteSequence[noteIndex - 48];
+                note.octave = 8;
+            }
+
+            note.duration = (float)(duration)/sampleRate;
+            return note;
+
         }
     }
 }
