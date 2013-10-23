@@ -281,7 +281,7 @@ namespace WaveDisplay
                     waveZoom.stftWav = waveIn.stftWav.GetRange(0,1000);
                     bmpSpectro = waveZoom.spectrogram(pictureBox2,frange);
                     pictureBox2.Image = bmpSpectro;
-                    waveZoom.spectroPow = waveIn.spectroPow.GetRange(levelScrollBar.Value, 199);
+                    waveZoom.spectroPow = waveIn.spectroPow.GetRange(levelScrollBar.Value, 200);
                     waveZoom.spectroDiffDraw(chart1);
                     CurSpectrCount = waveZoom.stftWav.Count;
                     levelScrollBar.Maximum = waveIn.stftWav.Count-CurSpectrCount;
@@ -360,11 +360,12 @@ namespace WaveDisplay
                 if (noteList.Count != 1)
                 {
                     int[] timeIndex = new int[2];
+                    //only identify the latest 2 chunk index in note list since other notes prior have been identified
                     int chunkIdxTmp1 = noteList[noteList.Count - 2];
                     int chunkIdxTmp2 = noteList.Last();
                     //get time index of wavedata that corresponds to the chunk
-                    timeIndex[0] = chunkIdxTmp1 * stftChunkSize / 4;
-                    timeIndex[1] = chunkIdxTmp2 * stftChunkSize / 4 + stftChunkSize;
+                    timeIndex[0] = chunkIdxTmp1 * stftChunkSize / 2;
+                    timeIndex[1] = chunkIdxTmp2 * stftChunkSize / 2 + stftChunkSize;
                     List<short> octTimeData = waveIn.leftData.GetRange(timeIndex[0], (timeIndex[1] - timeIndex[0] + 1));
 
                     //Pad data to make it 2^n count 
@@ -421,10 +422,14 @@ namespace WaveDisplay
         {
             using (Graphics g = Graphics.FromImage(Layer))
             {
-                Pen markPen = new Pen(Color.Green, 2.0f);
-                markPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+                
                 for (int i = 0; i < Xlocation.Count; i++)
                 {
+                    var penWidth=2.0f;
+                    if (i != 0 && Xlocation[i] == Xlocation[i - 1])
+                        penWidth = 3.0f;
+                    Pen markPen = new Pen(Color.Red, penWidth);
+                    markPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
                     g.DrawLine(markPen, new PointF(Xlocation[i], 0), new PointF(Xlocation[i], (float)Layer.Height));
                 }
             }
@@ -432,25 +437,30 @@ namespace WaveDisplay
 
         private void pictureBox2_SizeChanged(object sender, EventArgs e)
         {
-            bmpSpectro = waveZoom.spectrogram(pictureBox2, frange);
-            Bitmap bmpOut = new Bitmap(pictureBox2.Width, pictureBox2.Height);
-            Bitmap bmpMark = new Bitmap(bmpOut);
-            marksDisplay(ref bmpMark, true);
-            using (Graphics G = Graphics.FromImage(bmpOut))
+            if (pictureBox2.Width >= 600 && pictureBox2.Height >= 400)
             {
-                G.DrawImage(bmpSpectro, 0, 0);
-                G.DrawImage(bmpMark, 0, 0);
+                bmpSpectro = waveZoom.spectrogram(pictureBox2, frange);
+                Bitmap bmpOut = new Bitmap(pictureBox2.Width, pictureBox2.Height);
+                Bitmap bmpMark = new Bitmap(bmpOut);
+                marksDisplay(ref bmpMark, true);
+                using (Graphics G = Graphics.FromImage(bmpOut))
+                {
+                    G.DrawImage(bmpSpectro, 0, 0);
+                    G.DrawImage(bmpMark, 0, 0);
 
+                }
+                pictureBox2.Image = bmpOut;
             }
-            pictureBox2.Image = bmpOut;
-
         }
 
         private void pictureBox1_SizeChanged(object sender, EventArgs e)
         {
-            Bitmap bmpOutput = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            fbVisual.drawMusicNotation(ref bmpOutput, musicSheet, levelScrollBar.Value);
-            pictureBox1.Image = bmpOutput;
+            if (pictureBox1.Width >= 600 && pictureBox1.Height >= 400)
+            {
+                Bitmap bmpOutput = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+                fbVisual.drawMusicNotation(ref bmpOutput, musicSheet, levelScrollBar.Value);
+                pictureBox1.Image = bmpOutput;
+            }
         }
 
         public List<float> Pred_note_draw(List<float> X, ref Bitmap bmp)
@@ -476,7 +486,7 @@ namespace WaveDisplay
                 for (int i = 0; i < X.Count-1; i++)
                 {
                     float Xpos = X[i]-1+(X[i + 1] - X[i]) / 2;
-                    g.DrawString(notePick[i], new Font("Arial", 12), new SolidBrush(Color.Yellow), new PointF(Xpos, 50));
+                    g.DrawString(notePick[i], new Font("Arial", 10), new SolidBrush(Color.Yellow), new PointF(Xpos, 50));
                     notePos.Add(Xpos);
                 }
             }
@@ -624,7 +634,16 @@ namespace WaveDisplay
 
         private void Auto_but_Click(object sender, EventArgs e)
         {
-
+            List<WaveIn.noteInterval> onSetNotes= waveIn.onSetDetect(stftChunkSize);
+            noteList.Clear();
+            foreach (WaveIn.noteInterval item in onSetNotes)
+            {
+                noteList.Add(item.startIdx);
+                noteList.Add(item.endIdx);
+            }
+            Bitmap bmpSave=new Bitmap(bmpSpectro);
+            marksDisplay(ref bmpSave, true);
+            pictureBox2.Image = bmpSave;
         }
     }
 

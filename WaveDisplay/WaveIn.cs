@@ -22,6 +22,13 @@ namespace WaveDisplay
             public int percentage;
             public float duration;
         }
+
+        public struct noteInterval
+        {
+            public int startIdx;
+            public int endIdx;
+        }
+
         public List<notePredict> notePredictList=new List<notePredict>();
         public struct waveHeader
         {
@@ -255,7 +262,7 @@ namespace WaveDisplay
 
         public void STFT(List<short> inputValues, short No)
         {
-            int i, overLap = No / 4;
+            int i, overLap = No / 2; //overLap 50%
             List<float> fftChunk = new List<float>();
             List<float> fftChunktmp;
             int count = inputValues.Count;
@@ -273,40 +280,32 @@ namespace WaveDisplay
             for (int n = 0; n < stftWav.Count; n++)
             {
                
-                //int fstart = (int)(100 / (wavHeader.sampleRate / No));
-                //int fend = (int)(4400 / (wavHeader.sampleRate / No));
+                //int fstart = (int)(3000 / (wavHeader.sampleRate / No));
+                //int fend = (int)(5000 / (wavHeader.sampleRate / No));
                 //List<double> tempList = new List<double>();
-                //for (int k = fstart; k < fend; k++) //onset detection function focus on frequency between 100 and 4400 Viloin range
-                //{                                   //this range also act like a low pass filter, smooth the detection output curve
-                //    //1st option: calculate the spectral difference for onset detection 
-                //    //if (n <= 3)
-                //    //{
-                //    //    double Xmax = stftWav[n - 1].GetRange(k - 1, 3).Max();
-                //    //    tempList.Add(Math.Pow(stftWav[n][k], 2) - Math.Pow(Xmax, 2));
-                //    //}
-                //    //else
-                //    //{
-                //    //    double Xmax = stftWav[n - 3].GetRange(k - 1, 3).Max();
-                //    //    tempList.Add(Math.Pow(stftWav[n][k], 2) - Math.Pow(Xmax, 2));
-                //    //}
-                //    //2nd options: use high frequency content method
-                //    tempList.Add(Math.Pow(k,2)*Math.Pow(stftWav[n][k],2));
-                //}
+                //for (int k = fstart; k < fend; k++) //onset detection function focus on high frequency content
+                //   // 1st option: calculate the spectral difference for onset detection 
 
+                //    tempList.Add(stftWav[n][k]-stftWav[n-1][k]);
+                    
+                //    //2nd options: use high frequency content method
+                //   tempList.Add(Math.Pow(k,2)*Math.Pow(stftWav[n][k],2));
+                //}
+                //double sum = stftWav[n].Sum(X=>Math.Pow(X+Math.Abs(X)/2,2));
                 double sum = stftWav[n].Sum(X=>Math.Pow(X,2));
                 spectroPow.Add(sum);                            
             }
             //Apply moving average filter to smooth the curve   
-            double[] pad = new double[5];
+            double[] pad = new double[3];
             spectroPow.InsertRange(0, pad);
             spectroPow.AddRange(pad);
-            for (int m = 5; m < spectroPow.Count - 5; m++)
+            for (int m = 3; m < spectroPow.Count - 3; m++)
             {
-                var newVal = spectroPow.GetRange(m - 5, 10).Average();
+                var newVal = spectroPow.GetRange(m - 3, 6).Average();
                 spectroPow[m] = newVal;
             }
-            spectroPow.RemoveRange(0, 5);
-            spectroPow.RemoveRange(spectroPow.Count - 5, 5);
+            spectroPow.RemoveRange(0, 3);
+            spectroPow.RemoveRange(spectroPow.Count - 3, 3);
 
         }
         public List<float> FFT(List<short> inputValues)
@@ -340,27 +339,116 @@ namespace WaveDisplay
             return output;
         }
 
-        //public List<int[]> markNotes()
-        //{
-        //    List<int[]> noteMarkedList = new List<int[]>(); //each int[] is a pair of the STFT chunk indices of a note
-        //    List<double> sortedSpectroPow=spectroPow.OrderBy(data =>data).ToList();
-        //    var rest = sortedSpectroPow[(int)(0.01 * sortedSpectroPow.Count)];
-        //    int isStart = 0;
-        //    for(int i=0; i<spectroPow.Count-1;i++)
-        //    {
-        //        var markPairIdx=new int[2];
-        //        //the algorithm will ignore any chunk index that represents rest
-        //        if (spectroPow[i] > rest)
-        //        {
-                  
-                        
-                    
-        //        }
-                
+        public List<noteInterval> onSetDetect(int No)
+        {
+            List<noteInterval> noteMarkedList = new List<noteInterval>(); //each int[] is a pair of the waveform indices of a note
+            //define rest threshold
+            List<double> sortedSpectroPow = spectroPow.OrderBy(data => data).ToList();
+            var rest = sortedSpectroPow[(int)(0.08 * sortedSpectroPow.Count)];
+            int i=0;
+            //get rid of first rest time in some file/ save time of processing
+            while (spectroPow[i] <= rest)
+                i++;
+            noteInterval note ; //content the stft chunk index start and end of the note onset detection
+            note.startIdx = -1;
+            note.endIdx = -1;
 
-        //    }
-        //    return noteMarkedList;
-        //}
+            
+            string PrePitchName = "N";
+            while (i + 14 < spectroPow.Count)
+            {   
+                 //time index of the left range at the start point of the first note
+                int TimeStart = (int)(i * No / 2);
+                int TimeEnd = (int)((i + 14) * No / 2 + No);
+                List<float> PitchCorr = autocorrelation(leftData.GetRange(TimeStart, TimeEnd-TimeStart), wavHeader.sampleRate);
+                notePredict Pitch = noteIdentify(PitchCorr, wavHeader.sampleRate, TimeEnd-TimeStart); //using 5460 to reduce padding
+                                                                                    //iteration in autocorrelate function
+                if (Pitch.NoteName == "Err")
+                {                   
+                    var Chunk = spectroPow.GetRange(i, 9);
+                    //check for valley
+                    int MinIdx = Chunk.IndexOf(Chunk.Min());
+                    if (MinIdx - 2 >= 0 && MinIdx + 2 < Chunk.Count)
+                    {
+                        if (Chunk[MinIdx - 1] >= Chunk[MinIdx] && Chunk[MinIdx + 1] >= Chunk[MinIdx])
+                        {
+                            if (Chunk[MinIdx - 2] >= Chunk[MinIdx - 1] && Chunk[MinIdx + 2] >= Chunk[MinIdx + 1])
+                            {
+                                if (note.startIdx == -1)
+                                    note.startIdx = i-1;
+                                else
+                                    note.endIdx = i + 8;
+                                    
+                            }
+                        }
+                    }
+                }
+                else if (Pitch.NoteName != "NaN")
+                {
+
+                    if (Pitch.NoteName[0].ToString() != PrePitchName[0].ToString())
+                    {
+                        if (note.startIdx == -1)
+                            note.startIdx = i-1;
+                        else
+                            note.endIdx = i+ 8;
+                        PrePitchName = Pitch.NoteName[0].ToString();
+                        if (note.startIdx != -1 && note.endIdx != -1)
+                        {
+                            noteMarkedList.Add(note);
+                            //check for long note that contain actually some notes of same pitch
+                            if (note.endIdx - note.startIdx > 60)
+                            {
+                                //sorted the note chunk to find median
+                                var spectroPowChunk = sortedSpectroPow.GetRange(note.startIdx, note.endIdx - note.startIdx);
+                                var sortedChunk = spectroPowChunk.OrderBy(data => data).ToList();
+                                var lowerThreshold = sortedChunk[(int)(0.2 * sortedChunk.Count)];
+                                //moving window to find a valley
+                                List<int> extraMark = new List<int>();
+                                for (int k = 0; k + 20 < spectroPowChunk.Count; k += 20)
+                                {
+                                    var window = spectroPowChunk.GetRange(k, 20);
+                                    if(window.Min()<lowerThreshold)
+                                    {
+                                        extraMark.Add(window.IndexOf(window.Min())+k);
+                                    }
+                                }
+                                if (extraMark.Count > 0)
+                                {
+                                    var newStart = noteMarkedList.Last().startIdx;
+                                    var newEnd = noteMarkedList.Last().endIdx;
+                                    noteMarkedList.RemoveAt(noteMarkedList.Count - 1);
+                                    noteInterval newNote;
+                                    for (int e = 0; e < extraMark.Count; e++)
+                                    {
+                                        newNote.startIdx = newStart;
+                                        if (e != extraMark.Count - 1)
+                                            newNote.endIdx = extraMark[e];
+                                        else
+                                            newNote.endIdx = newEnd;
+                                        noteMarkedList.Add(newNote);
+                                        newStart = extraMark[e];
+                                    }
+                                }
+                            }
+                            note.startIdx = i+8;
+                            note.endIdx = -1;
+                        }
+                    }
+                    
+                }
+                if (note.startIdx != -1 && note.endIdx != -1)
+                    {
+                        note.startIdx = -1;
+                        note.endIdx = -1;
+                    }
+                
+                i+=5;
+            }          
+            //remove all the note that have a chunk duration of only 17 and under
+            noteMarkedList.RemoveAll(item => item.endIdx - item.startIdx <= 17);
+            return noteMarkedList;
+        }
 
         public List<float> autocorrelation(List<short> dataInput, uint sampleRate)
         { 
@@ -412,6 +500,7 @@ namespace WaveDisplay
         public notePredict noteIdentify(List<float> corrInput,uint sampleRate, int duration)
         {
             string[] noteSequence = new string[12] { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+            notePredict note = new notePredict(); 
             float corrMax = corrInput.Max();
             //Get data from the range 196kHZ to 4400Khz range of violin data
             List<float> localData = corrInput.GetRange((int)(sampleRate / 4400), (int)(sampleRate / 196-sampleRate/4400));
@@ -419,13 +508,33 @@ namespace WaveDisplay
             //sort data from smallest to largest, then find median 
             List<float> sortedData = localData.OrderBy(data => data).ToList();
             float threshold = sortedData[(int)(0.95 * sortedData.Count)]; //peak usually lies at 95% of data
-            
+            //if threshold is NaN, this function return an unidentified note and is named as NaN"
+            if (Single.IsNaN(threshold))
+            { 
+                note.NoteName = "NaN"; //indicate a rest 
+                return note; 
+            }
+
             int i = 0;
 
             while (corrInput[i] > threshold)  //remove all of high correlation value at the beginning 
+            {
+                if (i >= ((3.0f / 2) * sampleRate / 196))
+                {
+                    note.NoteName = "Err"; //unable to identify note
+                    return note; 
+                }
                 i++;
+            }
             while (corrInput[i] <= threshold) //pass threshold value 
+            {
+                if (i >= ((3.0f / 2) * sampleRate / 196))
+                {
+                    note.NoteName = "Err"; //unable to identify note
+                    return note;
+                }
                 i++;
+            }
             List<float> peakData = new List<float>();
             int j = i;
             while (corrInput[i] > threshold)
@@ -438,7 +547,7 @@ namespace WaveDisplay
             double nlogfreq = Math.Log(fpeak/440,2)*12+9; //value in term on n/12 + 9 that makes C4 has n=0;
             int noteIndex = (int) Math.Round(nlogfreq); //return the integer term of n 
          
-            notePredict note = new notePredict(); 
+            
             note.percentage = (int)(100*(nlogfreq-noteIndex));
             if (noteIndex >= 0 && noteIndex < 12)
             {
