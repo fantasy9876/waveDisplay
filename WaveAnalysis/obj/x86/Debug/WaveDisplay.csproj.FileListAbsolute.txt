@@ -1,0 +1,14 @@
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\bin\Debug\res\d.wav
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\bin\Debug\WaveDisplay.exe
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\bin\Debug\WaveDisplay.pdb
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\bin\Debug\NAudio.dll
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\bin\Debug\NAudio.WindowsMediaFormat.dll
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\obj\x86\Debug\WaveDisplay.csprojResolveAssemblyReference.cache
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\obj\x86\Debug\WaveDisplay.Form1.resources
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\obj\x86\Debug\WaveDisplay.Form3.resources
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\obj\x86\Debug\WaveDisplay.Properties.Resources.resources
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\obj\x86\Debug\WaveDisplay.csproj.GenerateResource.Cache
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\obj\x86\Debug\WaveDisplay.exe
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\obj\x86\Debug\WaveDisplay.pdb
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\bin\Debug\PSAMControlLibrary.dll
+C:\Users\TramN\Documents\BEB 801\svn shared\trunk\WaveDisplay\bin\Debug\PSAMControlLibrary.pdb
