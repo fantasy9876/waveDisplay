@@ -15,6 +15,7 @@ namespace WaveDisplay
 {
     public class WaveIn
     {
+        public enum onsetDetectMode { PitchDetection, SpectralDifference };
         public struct notePredict
         {
             public string NoteName;
@@ -49,7 +50,7 @@ namespace WaveDisplay
         public List<short> leftData = new List<short>(); //Aussme if filewave is mono, use this leftData to extract data
         public List<short> rightData = new List<short>();
         public List<List<float>> stftWav = new List<List<float>>(); //contain all fft chunks to form STFT data
-        public List<double> spectroPow = new List<double>(); //List with each element is the total power of each STFT chunk 
+        public List<double> spectroDiff = new List<double>(); //List with each element is the total power of each STFT chunk 
 
         public WaveIn(WaveIn previousWave)
         {
@@ -100,7 +101,7 @@ namespace WaveDisplay
                             {
                                 if (wavHeader.bitSample == 8)
                                 {
-                                    leftData.Add((short)(br.ReadByte()));
+                                    leftData.Add((short)((br.ReadByte()-128)*65536/256));
                                     rightData.Add((short)(br.ReadByte()));
                                 }
                                 else
@@ -194,11 +195,11 @@ namespace WaveDisplay
         public void spectroDiffDraw(Chart outputChart)
         {
             outputChart.Series.Clear();
-            outputChart.Series.Add("corrSeries");
-            outputChart.Series["corrSeries"].ChartType = SeriesChartType.FastLine;
-            foreach (double item in spectroPow)
+            outputChart.Series.Add("outSeries");
+            outputChart.Series["outSeries"].ChartType = SeriesChartType.FastLine;
+            foreach (double item in spectroDiff)
             {
-                outputChart.Series["corrSeries"].Points.AddY((double)item);
+                outputChart.Series["outSeries"].Points.AddY((double)item);
             }
         }
 
@@ -222,7 +223,7 @@ namespace WaveDisplay
                 g.Clear(Color.Black);
                 for (i = 0; i < stftWav.Count; i++)
                 {
-                    for (j = 0; j < frange; j++)  //higher frequencies are plotted from the bottom of screen
+                    for (j = 0; j < frange; j++)  //higher frequencies are plotted at the bottom of screen
                     {
                         coordF = new PointF(i * Xscale, j * Yscale);
                         rectF = new RectangleF(coordF, rectFsize);
@@ -268,52 +269,66 @@ namespace WaveDisplay
             int count = inputValues.Count;
             for (i = 0; i + No < count; i += overLap)
             {
-                fftChunktmp = FFT(inputValues.GetRange(i, No));
+                fftChunktmp = FFT(inputValues.GetRange(i, No),true);
                 fftChunk = fftChunktmp.GetRange(0, fftChunktmp.Count / 2);
 
                 stftWav.Add(fftChunk);
             }
-            fftChunktmp = FFT(inputValues.GetRange(count - No, No)); ;
+            fftChunktmp = FFT(inputValues.GetRange(count - No, No),true); ;
             fftChunk = fftChunktmp.GetRange(0, fftChunktmp.Count / 2);
             stftWav.Add(fftChunk);
 
-            for (int n = 0; n < stftWav.Count; n++)
+            for (int n = 1; n < stftWav.Count; n++)
             {
                
-                //int fstart = (int)(3000 / (wavHeader.sampleRate / No));
-                //int fend = (int)(5000 / (wavHeader.sampleRate / No));
-                //List<double> tempList = new List<double>();
-                //for (int k = fstart; k < fend; k++) //onset detection function focus on high frequency content
-                //   // 1st option: calculate the spectral difference for onset detection 
+                int fstart = (int)(1000 / (wavHeader.sampleRate / No));
+                int fend = (int)(3000 / (wavHeader.sampleRate / No));
+                List<double> tempList = new List<double>();
+                for (int k = fstart; k < fend; k++) //onset detection function focus on high frequency content
+                {
+                  // 1st option: calculate the spectral difference for onset detection 
 
-                //    tempList.Add(stftWav[n][k]-stftWav[n-1][k]);
+                   tempList.Add(stftWav[n][k]-stftWav[n-1][k]);
                     
-                //    //2nd options: use high frequency content method
-                //   tempList.Add(Math.Pow(k,2)*Math.Pow(stftWav[n][k],2));
-                //}
-                //double sum = stftWav[n].Sum(X=>Math.Pow(X+Math.Abs(X)/2,2));
-                double sum = stftWav[n].Sum(X=>Math.Pow(X,2));
-                spectroPow.Add(sum);                            
+                   //2nd options: use high frequency content method
+                    //tempList.Add(k*Math.Pow(stftWav[n][k],2));
+                }
+                double sum = tempList.Sum(X=>Math.Pow(X+Math.Abs(X)/2,2));
+                //double sum = tempList.Sum();
+                spectroDiff.Add(sum);                            
             }
             //Apply moving average filter to smooth the curve   
-            double[] pad = new double[3];
-            spectroPow.InsertRange(0, pad);
-            spectroPow.AddRange(pad);
-            for (int m = 3; m < spectroPow.Count - 3; m++)
+            double[] pad = new double[5];
+            spectroDiff.InsertRange(0, pad);
+            spectroDiff.AddRange(pad);
+            for (int m = 5; m < spectroDiff.Count - 5; m++)
             {
-                var newVal = spectroPow.GetRange(m - 3, 6).Average();
-                spectroPow[m] = newVal;
+                var newVal = spectroDiff.GetRange(m - 5, 10).Average();
+                spectroDiff[m] = newVal;
             }
-            spectroPow.RemoveRange(0, 3);
-            spectroPow.RemoveRange(spectroPow.Count - 3, 3);
+            spectroDiff.RemoveRange(0, 5);
+            spectroDiff.RemoveRange(spectroDiff.Count - 5, 5);
 
         }
-        public List<float> FFT(List<short> inputValues)
+        public List<float> FFT(List<short> inputValues, bool isHamming)
         {
             int N = inputValues.Count; //assume N =2^n
+            List<float> Real = new List<float>();
+            if (isHamming)
+            {
+                //Multiply signal with Hamming Window
+                
+                for (int h = 0; h < N; h++)
+                {
+                    Real.Add((0.54f - 0.46f * (float)Math.Cos((2 * Math.PI * h) / (N - 1))) * inputValues[h]);
+                }
+            }
+            else
+                Real = inputValues.ConvertAll(y => (float)y);
+            
             int n = (int)(Math.Log(N) / Math.Log(2));
             int i;
-            List<float> Real = inputValues.ConvertAll(y => (float)y);
+             
             List<float> Imagine = new List<float>();
             for (i = 0; i < inputValues.Count; i++)
             {
@@ -339,121 +354,117 @@ namespace WaveDisplay
             return output;
         }
 
-        public List<noteInterval> onSetDetect(int No)
-        {
+        public List<noteInterval> onSetDetect(int No, onsetDetectMode mode, int minWindow)
+        {         
             List<noteInterval> noteMarkedList = new List<noteInterval>(); //each int[] is a pair of the waveform indices of a note
-            //define rest threshold
-            List<double> sortedSpectroPow = spectroPow.OrderBy(data => data).ToList();
-            var rest = sortedSpectroPow[(int)(0.08 * sortedSpectroPow.Count)];
-            int i=0;
-            //get rid of first rest time in some file/ save time of processing
-            while (spectroPow[i] <= rest)
-                i++;
-            noteInterval note ; //content the stft chunk index start and end of the note onset detection
+            noteInterval note; //content the stft chunk index start and end of the note onset detection
             note.startIdx = -1;
             note.endIdx = -1;
+            int TimeStart, TimeEnd;
 
             
-            string PrePitchName = "N";
-            while (i + 14 < spectroPow.Count)
-            {   
-                 //time index of the left range at the start point of the first note
-                int TimeStart = (int)(i * No / 2);
-                int TimeEnd = (int)((i + 14) * No / 2 + No);
-                List<float> PitchCorr = autocorrelation(leftData.GetRange(TimeStart, TimeEnd-TimeStart), wavHeader.sampleRate);
-                notePredict Pitch = noteIdentify(PitchCorr, wavHeader.sampleRate, TimeEnd-TimeStart); //using 5460 to reduce padding
-                                                                                    //iteration in autocorrelate function
-                if (Pitch.NoteName == "Err")
-                {                   
-                    var Chunk = spectroPow.GetRange(i, 9);
-                    //check for valley
-                    int MinIdx = Chunk.IndexOf(Chunk.Min());
-                    if (MinIdx - 2 >= 0 && MinIdx + 2 < Chunk.Count)
+            switch (mode)
+            {
+                case onsetDetectMode.PitchDetection:                    
+                    int i = 0;
+                    string PrePitchName = "N";
+                    while (i + 10 < spectroDiff.Count)
                     {
-                        if (Chunk[MinIdx - 1] >= Chunk[MinIdx] && Chunk[MinIdx + 1] >= Chunk[MinIdx])
+                        //time index of the left range at the start point of the first note
+                        TimeStart = (int)(i * No / 2);
+                        TimeEnd = (int)((i + 10) * No / 2 + No);
+                        int range = TimeEnd - TimeStart;
+                        if (TimeEnd > leftData.Count)
+                            range = leftData.Count - TimeStart;
+                        List<float> PitchCorr = autocorrelation(leftData.GetRange(TimeStart, range), wavHeader.sampleRate);
+                        notePredict Pitch = noteIdentify(PitchCorr, wavHeader.sampleRate, TimeEnd - TimeStart); //using 5460 to reduce padding
+                        //iteration in autocorrelate function
+                        if (Pitch.NoteName == "Err")
                         {
-                            if (Chunk[MinIdx - 2] >= Chunk[MinIdx - 1] && Chunk[MinIdx + 2] >= Chunk[MinIdx + 1])
+                            var Chunk = spectroDiff.GetRange(i, 10);
+                            //check for valley
+                            int MinIdx = Chunk.IndexOf(Chunk.Min());
+                            if (MinIdx - 2 >= 0 && MinIdx + 2 < Chunk.Count)
+                            {
+                                if (Chunk[MinIdx - 1] >= Chunk[MinIdx] && Chunk[MinIdx + 1] >= Chunk[MinIdx])
+                                {
+                                    if (Chunk[MinIdx - 2] >= Chunk[MinIdx - 1] && Chunk[MinIdx + 2] >= Chunk[MinIdx + 1])
+                                    {
+                                        if (note.startIdx == -1)
+                                            note.startIdx = i - 5;
+                                        else
+                                            note.endIdx = i + 5;
+
+                                    }
+                                }
+                            }
+                        }
+                        else if (Pitch.NoteName != "NaN")
+                        {
+
+                            if (Pitch.NoteName[0].ToString() != PrePitchName[0].ToString())
                             {
                                 if (note.startIdx == -1)
-                                    note.startIdx = i-1;
+                                    note.startIdx = i - 5;
                                 else
-                                    note.endIdx = i + 8;
-                                    
+                                    note.endIdx = i + 5;
+                                PrePitchName = Pitch.NoteName[0].ToString();
+                                if (note.startIdx != -1 && note.endIdx != -1)
+                                {
+                                    noteMarkedList.Add(note);                           
+                                    note.startIdx = i + 5;
+                                    note.endIdx = -1;
+                                }
                             }
-                        }
-                    }
-                }
-                else if (Pitch.NoteName != "NaN")
-                {
 
-                    if (Pitch.NoteName[0].ToString() != PrePitchName[0].ToString())
-                    {
-                        if (note.startIdx == -1)
-                            note.startIdx = i-1;
-                        else
-                            note.endIdx = i+ 8;
-                        PrePitchName = Pitch.NoteName[0].ToString();
+                        }
                         if (note.startIdx != -1 && note.endIdx != -1)
                         {
-                            noteMarkedList.Add(note);
-                            //check for long note that contain actually some notes of same pitch
-                            if (note.endIdx - note.startIdx > 60)
-                            {
-                                //sorted the note chunk to find median
-                                var spectroPowChunk = sortedSpectroPow.GetRange(note.startIdx, note.endIdx - note.startIdx);
-                                var sortedChunk = spectroPowChunk.OrderBy(data => data).ToList();
-                                var lowerThreshold = sortedChunk[(int)(0.2 * sortedChunk.Count)];
-                                //moving window to find a valley
-                                List<int> extraMark = new List<int>();
-                                for (int k = 0; k + 20 < spectroPowChunk.Count; k += 20)
-                                {
-                                    var window = spectroPowChunk.GetRange(k, 20);
-                                    if(window.Min()<lowerThreshold)
-                                    {
-                                        extraMark.Add(window.IndexOf(window.Min())+k);
-                                    }
-                                }
-                                if (extraMark.Count > 0)
-                                {
-                                    var newStart = noteMarkedList.Last().startIdx;
-                                    var newEnd = noteMarkedList.Last().endIdx;
-                                    noteMarkedList.RemoveAt(noteMarkedList.Count - 1);
-                                    noteInterval newNote;
-                                    for (int e = 0; e < extraMark.Count; e++)
-                                    {
-                                        newNote.startIdx = newStart;
-                                        if (e != extraMark.Count - 1)
-                                            newNote.endIdx = extraMark[e];
-                                        else
-                                            newNote.endIdx = newEnd;
-                                        noteMarkedList.Add(newNote);
-                                        newStart = extraMark[e];
-                                    }
-                                }
-                            }
-                            note.startIdx = i+8;
+                            note.startIdx = -1;
                             note.endIdx = -1;
                         }
+
+                        i += 5;
                     }
-                    
-                }
-                if (note.startIdx != -1 && note.endIdx != -1)
+                   
+                    break;
+                case onsetDetectMode.SpectralDifference:
+                    for (int a = 0; a+ minWindow < spectroDiff.Count; a+= minWindow/2)
                     {
-                        note.startIdx = -1;
-                        note.endIdx = -1;
+                        var window = spectroDiff.GetRange(a, minWindow);
+                        //check to see if the max value is a peak
+                        var MaxIdx = window.IndexOf(window.Max());
+                        if (MaxIdx - 1 >= 0 && MaxIdx + 1 < window.Count)
+                        {
+                            if (window[MaxIdx - 1] <= window[MaxIdx] && window[MaxIdx + 1] <= window[MaxIdx])
+                            {
+                                
+                                if (note.startIdx == -1)
+                                    note.startIdx = MaxIdx+a-2;
+                                else
+                                    note.endIdx = MaxIdx+a-2;
+                                if (note.startIdx != -1 && note.endIdx != -1)
+                                {
+                                    noteMarkedList.Add(note);
+                                    note.startIdx = MaxIdx+a - 2;
+                                    note.endIdx = -1;
+                                }
+                               
+                            }
+                        }
                     }
-                
-                i+=5;
-            }          
-            //remove all the note that have a chunk duration of only 17 and under
-            noteMarkedList.RemoveAll(item => item.endIdx - item.startIdx <= 17);
+                    break;
+                default:
+                    break;
+            }
+            //remove all the note that have a chunk duration of 2/3 of window size and under
+            noteMarkedList.RemoveAll(item => item.endIdx - item.startIdx <=  2*minWindow / 3);
             return noteMarkedList;
         }
 
         public List<float> autocorrelation(List<short> dataInput, uint sampleRate)
         { 
-            //extend the length of dataInput to further 1/2 of its length by zeros padding, dataInput is time inteval values
-            List<float> FFToutput = FFT(dataInput);
+            List<float> FFToutput = FFT(dataInput,true);
             int N = FFToutput.Count; //assume N =2^n
             float fres = sampleRate /(float) N;
             int[] cutoffIdx = new int[2];

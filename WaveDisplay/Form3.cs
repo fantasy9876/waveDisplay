@@ -29,8 +29,8 @@ namespace WaveDisplay
         public List<float> fftGet(int noteIdx,ref float frate)
         {
             int[] timeIndex = new int[2];
-            timeIndex[0] = NoteList[noteIdx] * stftChunkSize / 4;
-            timeIndex[1] = NoteList[noteIdx + 1] * stftChunkSize / 4 + stftChunkSize;
+            timeIndex[0] = NoteList[noteIdx] * stftChunkSize / 2;
+            timeIndex[1] = NoteList[noteIdx + 1] * stftChunkSize / 2 + stftChunkSize;
 
             List<short> octTimeData = wavedata.leftData.GetRange(timeIndex[0], (timeIndex[1] - timeIndex[0] + 1));
             //Pad data to make it 2^n count 
@@ -51,14 +51,14 @@ namespace WaveDisplay
                 corrOuput[s] = corrOuput[s] / corrMax;
             }
             //output data directly to a chart, zoomable
-            chart1.Series.Clear();
-            chart1.Series.Add("corrSeries");
-            chart1.Series["corrSeries"].ChartType = SeriesChartType.FastLine;
+            corrChart.Series.Clear();
+            corrChart.Series.Add("corrSeries");
+            corrChart.Series["corrSeries"].ChartType = SeriesChartType.FastLine;
             foreach (float item in corrOuput)
             {
-                chart1.Series["corrSeries"].Points.AddY((double)item);
+                corrChart.Series["corrSeries"].Points.AddY((double)item);
             }
-            List<float> octFFT = wavedata.FFT(octTimeData);
+            List<float> octFFT = wavedata.FFT(octTimeData,false);
             frate = (float)(wavedata.wavHeader.sampleRate) / (octFFT.Count * 2);
             return octFFT;
         }

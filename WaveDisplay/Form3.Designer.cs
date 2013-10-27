@@ -31,9 +31,9 @@
             System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.noteListView = new System.Windows.Forms.ListView();
-            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.corrChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.corrChart)).BeginInit();
             this.SuspendLayout();
             // 
             // pictureBox1
@@ -62,24 +62,24 @@
             this.noteListView.View = System.Windows.Forms.View.List;
             this.noteListView.ItemActivate += new System.EventHandler(this.noteListView_ItemActivate);
             // 
-            // chart1
+            // corrChart
             // 
-            this.chart1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.corrChart.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.chart1.BorderlineColor = System.Drawing.Color.Black;
-            this.chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
+            this.corrChart.BorderlineColor = System.Drawing.Color.Black;
+            this.corrChart.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
             chartArea1.CursorX.IsUserEnabled = true;
             chartArea1.CursorX.IsUserSelectionEnabled = true;
             chartArea1.Name = "ChartArea1";
             chartArea1.Position.Auto = false;
             chartArea1.Position.Height = 100F;
             chartArea1.Position.Width = 100F;
-            this.chart1.ChartAreas.Add(chartArea1);
-            this.chart1.Location = new System.Drawing.Point(57, 0);
-            this.chart1.Name = "chart1";
-            this.chart1.Size = new System.Drawing.Size(1204, 186);
-            this.chart1.TabIndex = 2;
-            this.chart1.Text = "chart1";
+            this.corrChart.ChartAreas.Add(chartArea1);
+            this.corrChart.Location = new System.Drawing.Point(57, 0);
+            this.corrChart.Name = "corrChart";
+            this.corrChart.Size = new System.Drawing.Size(1204, 186);
+            this.corrChart.TabIndex = 2;
+            this.corrChart.Text = "chart1";
             // 
             // Form3
             // 
@@ -87,7 +87,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1261, 782);
             this.Controls.Add(this.noteListView);
-            this.Controls.Add(this.chart1);
+            this.Controls.Add(this.corrChart);
             this.Controls.Add(this.pictureBox1);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "Form3";
@@ -95,7 +95,7 @@
             this.Load += new System.EventHandler(this.Form3_Load);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.Form3_Paint);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.corrChart)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -104,7 +104,7 @@
 
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.ListView noteListView;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.DataVisualization.Charting.Chart corrChart;
 
 
 
