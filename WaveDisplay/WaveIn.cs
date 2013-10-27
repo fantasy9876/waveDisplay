@@ -361,7 +361,6 @@ namespace WaveDisplay
             note.startIdx = -1;
             note.endIdx = -1;
             int TimeStart, TimeEnd;
-
             
             switch (mode)
             {
@@ -382,7 +381,7 @@ namespace WaveDisplay
                         if (Pitch.NoteName == "Err")
                         {
                             var Chunk = spectroDiff.GetRange(i, 10);
-                            //check for valley
+                            //check for valley, if yes, it is a sign of transition of note, otherwise it is just rest
                             int MinIdx = Chunk.IndexOf(Chunk.Min());
                             if (MinIdx - 2 >= 0 && MinIdx + 2 < Chunk.Count)
                             {
@@ -399,7 +398,7 @@ namespace WaveDisplay
                                 }
                             }
                         }
-                        else if (Pitch.NoteName != "NaN")
+                        else if (Pitch.NoteName != "NaN") //if NaN, it is just a rest
                         {
 
                             if (Pitch.NoteName[0].ToString() != PrePitchName[0].ToString())

@@ -166,21 +166,21 @@ namespace WaveDisplay
                 chunkIndexRange[0] = tempIdx2;
                 chunkIndexRange[1] = tempIdx2 + CurSpectrCount-1;                                            
             }
-            Bitmap bmpOut = new Bitmap(bmpSpectro);
+            mainBMout = new Bitmap(bmpSpectro);
             List<float> X = new List<float>();
-  
-            using (Graphics G = Graphics.FromImage(bmpOut))
+
+            using (Graphics G = Graphics.FromImage(mainBMout))
             {
-               X= marksDisplay(ref bmpOut,true);
+                X = marksDisplay(ref mainBMout, true);
 
             }
             if (viewed)
             {
-                List<float> notePos = Pred_note_draw(X, ref bmpOut);
+                List<float> notePos = Pred_note_draw(X, ref mainBMout);
                 if (XMLFile != "")
-                    noteXML_draw(notePos, ref bmpOut);
+                    noteXML_draw(notePos, ref mainBMout);
             }
-            pictureBox2.Image = bmpOut;
+            pictureBox2.Image = mainBMout;
 
         }
 
@@ -233,12 +233,12 @@ namespace WaveDisplay
                     while (string.Compare(musicSheet.NoteExtract[XMLnoteIdx].Name, "rest") == 0)
                     {
                         WaveIn.notePredict notebuffer = new WaveIn.notePredict();
-                        notebuffer.NoteName = "rest";
+                        notebuffer.NoteName = "NaN";
                         notebuffer.octave = -1;
                         notePredictedPrint.Insert(0, notebuffer);
                         XMLnoteIdx++;
                     }
-
+                    fbVisual.noteMatching(ref notePredictedPrint, musicSheet.NoteExtract);
                     if (notePredictedPrint.Count > levelScrollBar.Value)
                     {
                         int Idx = levelScrollBar.Value;
@@ -306,14 +306,15 @@ namespace WaveDisplay
 
                     List<WaveIn.notePredict> notePredictedPrint = new List<WaveIn.notePredict>(waveIn.notePredictList);
                     int XMLnoteIdx = 0;
-                    while (string.Compare(musicSheet.NoteExtract[XMLnoteIdx].Name, "rest") == 0)
+                    while (string.Compare(musicSheet.NoteExtract[XMLnoteIdx].Name, "rest") == 0) //ignore all the first rest notes
                     {
                         WaveIn.notePredict notebuffer = new WaveIn.notePredict();
-                        notebuffer.NoteName = "rest";
+                        notebuffer.NoteName = "NaN";
                         notebuffer.octave = -1;
                         notePredictedPrint.Insert(0, notebuffer);
                         XMLnoteIdx++;
                     }
+                    fbVisual.noteMatching(ref notePredictedPrint, musicSheet.NoteExtract);
                     int Idx = 0;
                     if (notePredictedPrint.Count <= (pic.Width - 200) / 120)
                         while (Idx < notePredictedPrint.Count)
@@ -568,7 +569,10 @@ namespace WaveDisplay
                 {
                     XMLnoteIdx++;
                 }
-                XMLnoteIdx += index;
+                if (index % 2 == 0)
+                    XMLnoteIdx += index / 2;
+                else
+                    XMLnoteIdx += (index + 1) / 2;
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
                     for (int i = 0; i < location.Count; i++)
@@ -737,6 +741,8 @@ namespace WaveDisplay
             }
             List<float> X = marksDisplay(ref mainBMout, false);
             List<float> NotePos = Pred_note_draw(X, ref mainBMout);
+            if(XMLFile != "")
+                noteXML_draw(NotePos, ref mainBMout);
             pictureBox2.Invalidate();
         }
 
