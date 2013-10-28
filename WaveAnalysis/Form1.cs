@@ -282,12 +282,17 @@ namespace WaveAnalysis
             else if (e.TabPageIndex == 1)
             {
                 if (waveFile != "")
-                {                  
-                    waveZoom.stftWav = waveIn.stftWav.GetRange(0,500);
+                {
+                    int nfirstZoom;
+                    if (waveIn.stftWav.Count <= 500)
+                        nfirstZoom = 200;
+                    else
+                        nfirstZoom = 500;
+                    waveZoom.stftWav = waveIn.stftWav.GetRange(0, nfirstZoom);
                     bmpSpectro = waveZoom.spectrogram(pictureBox2,frange);
                     mainBMout = new Bitmap(bmpSpectro);
                     pictureBox2.Invalidate();
-                    waveZoom.spectroDiff = waveIn.spectroDiff.GetRange(0, 200);
+                    waveZoom.spectroDiff = waveIn.spectroDiff.GetRange(0, nfirstZoom);
                     waveZoom.spectroDiffDraw(chart1);
                     CurSpectrCount = waveZoom.stftWav.Count;
                     levelScrollBar.Maximum = waveIn.stftWav.Count-CurSpectrCount;
@@ -476,6 +481,7 @@ namespace WaveAnalysis
             List<float> notePos = new List<float>();
             List<string> notePick = new List<string>();            
             int index=0, i=0;
+            //pick the notes that fall into current STFT range on screen
             while(noteList[index]<chunkIndexRange[0] && index <noteList.Count)
             {
                 index++;
@@ -486,7 +492,7 @@ namespace WaveAnalysis
                 index += 1;
                 i += 1;
             }
-            while(noteList[index]<=chunkIndexRange[1]&& index!=noteList.Count-1)
+            while(index<noteList.Count && noteList[index]<=chunkIndexRange[1] )
             {
                 notePick.Add(waveIn.notePredictList[index / 2].NoteName + waveIn.notePredictList[index / 2].octave.ToString());
                 index+=2;
@@ -511,37 +517,39 @@ namespace WaveAnalysis
         private void audioFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //COMMENT OUT FOR DEBUG
-            //OpenFD.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            //OpenFD.FileName = "";
-            //OpenFD.Filter = "PCM wave File|*.wav";
-            //OpenFD.ShowDialog();
-            //waveFile = OpenFD.FileName;
+            OpenFD.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            OpenFD.FileName = "";
+            OpenFD.Filter = "PCM wave File|*.wav";
+            OpenFD.ShowDialog();
+            waveFile = OpenFD.FileName;
             ///////////////////
 
             //hardcode file name 
-            waveFile = "C:\\Users\\TramN\\Documents\\BEB 801\\samples\\Jupiter.wav";
+            //waveFile = "C:\\Users\\TramN\\Documents\\BEB 801\\samples\\Jupiter.wav";
             ///////////////////
             if (waveFile != "")
             {
                 waveIn = new WaveIn();
                 waveIn.waveExtract(waveFile);
                 waveIn.STFT(waveIn.leftData, stftChunkSize);
-                //waveIn.DrawAudio(waveIn.leftData, pictureBox3);
+                waveIn.DrawAudio(waveIn.leftData, pictureBox3);
                 frange =(int) (10000 / (waveIn.wavHeader.sampleRate / stftChunkSize)); // use for examine only freq band under 10000k
                 levelScrollBar.Maximum = 0;
-                tabControl1.SelectedIndex = 1;
+                //hard code to save time debugging, jump straight to spectrogram view
+                //tabControl1.SelectedIndex = 1;
             }
         }
 
         private void musicXMLFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //COMMENT OUT FOR DEBUG
-            //OpenFD.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
-            //OpenFD.FileName = "";
-            //OpenFD.Filter = "Music XML File|*.xml";
-            //OpenFD.ShowDialog();
-            //XMLFile = OpenFD.FileName;
-            XMLFile = "C:\\Users\\TramN\\Documents\\BEB 801\\samples\\Jupiter.xml";
+            OpenFD.InitialDirectory = System.Environment.GetFolderPath(Environment.SpecialFolder.Personal);
+            OpenFD.FileName = "";
+            OpenFD.Filter = "Music XML File|*.xml";
+            OpenFD.ShowDialog();
+            XMLFile = OpenFD.FileName;
+            //hard code to save time debugging
+            //XMLFile = "C:\\Users\\TramN\\Documents\\BEB 801\\samples\\Jupiter.xml";
             if (XMLFile != "" && viewed==true)
             {
                 musicSheet = new MusicSheet();
