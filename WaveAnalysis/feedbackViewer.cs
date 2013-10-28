@@ -15,7 +15,7 @@ namespace WaveAnalysis
             Font Musical = new Font("MusicalSymbols", 100, GraphicsUnit.Pixel);
             int staff_height = pic.Height/2 - 100;
 
-            List<MusicSheet.Note> NoteList = XMLmusicData.NoteExtract.GetRange(startIdx, (pic.Width - 200) / 120);
+            
             using (Graphics G= Graphics.FromImage(pic))
             {
                 //Draw Music Staff
@@ -33,30 +33,34 @@ namespace WaveAnalysis
                 G.DrawString("Precision offset", new Font("Arial", 12), new SolidBrush(Color.Black), new PointF(16, staff_height - 50));
                 G.DrawString("Duration (sec)", new Font("Arial", 12), new SolidBrush(Color.Black), new PointF(16, staff_height + 225));
 
-                //Draw Note, assume default space = 120;
-                i = 0;
-                foreach  (MusicSheet.Note noteItem in NoteList)
+                if (XMLmusicData.NoteExtract.Count !=0)
                 {
-                    string notePrint="";
-                    string noteType;
-                    if (noteItem.Name == "rest")
-                        noteType = "rest";
-                    else
-                        noteType = noteItem.type;
-                    notePrint = notePrintCode(noteType, noteItem.stemDirect, noteItem.duration, XMLmusicData.division);
-                   
-                //assume music clef is G and note G is on the 2nd line of music staff 
-                    int shift = noteCharShift(noteItem.Name, noteItem.octave);
-      
-                    G.DrawString(notePrint, Musical, new SolidBrush(Color.Black), new PointF(200 + i * space, staff_height+shift));
-                    if (noteItem.isDot)
-                        G.DrawString(char.ConvertFromUtf32(0x2E), Musical, new SolidBrush(Color.Black), new PointF(245+ i * space, staff_height + shift));
-                    if ((noteItem.Name == "B" && noteItem.octave == 3) || (noteItem.Name == "C" && noteItem.octave == 4))
-                        G.DrawString(char.ConvertFromUtf32(0x5F), Musical, new SolidBrush(Color.Black), new PointF(195 + i * space, staff_height + 25));
-                    if ((noteItem.Name == "B" && noteItem.octave == 5) || (noteItem.Name == "A" && NoteList[i].octave == 5))
-                        G.DrawString(char.ConvertFromUtf32(0x5F), Musical, new SolidBrush(Color.Black), new PointF(190 + i * space, staff_height -125));
-                    i++;
-                }                
+                    List<MusicSheet.Note> NoteList = XMLmusicData.NoteExtract.GetRange(startIdx, (pic.Width - 200) / 120);
+                    //Draw Note, assume default space = 120;
+                    i = 0;
+                    foreach (MusicSheet.Note noteItem in NoteList)
+                    {
+                        string notePrint = "";
+                        string noteType;
+                        if (noteItem.Name == "rest")
+                            noteType = "rest";
+                        else
+                            noteType = noteItem.type;
+                        notePrint = notePrintCode(noteType, noteItem.stemDirect, noteItem.duration, XMLmusicData.division);
+
+                        //assume music clef is G and note G is on the 2nd line of music staff 
+                        int shift = noteCharShift(noteItem.Name, noteItem.octave);
+
+                        G.DrawString(notePrint, Musical, new SolidBrush(Color.Black), new PointF(200 + i * space, staff_height + shift));
+                        if (noteItem.isDot)
+                            G.DrawString(char.ConvertFromUtf32(0x2E), Musical, new SolidBrush(Color.Black), new PointF(245 + i * space, staff_height + shift));
+                        if ((noteItem.Name == "B" && noteItem.octave == 3) || (noteItem.Name == "C" && noteItem.octave == 4))
+                            G.DrawString(char.ConvertFromUtf32(0x5F), Musical, new SolidBrush(Color.Black), new PointF(195 + i * space, staff_height + 25));
+                        if ((noteItem.Name == "B" && noteItem.octave == 5) || (noteItem.Name == "A" && NoteList[i].octave == 5))
+                            G.DrawString(char.ConvertFromUtf32(0x5F), Musical, new SolidBrush(Color.Black), new PointF(190 + i * space, staff_height - 125));
+                        i++;
+                    }                
+                }               
             }
         }
         public void drawActualNote(ref Bitmap pic,WaveIn.notePredict notePredicted, int offset, int space = 120)

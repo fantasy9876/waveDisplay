@@ -251,15 +251,45 @@ namespace WaveAnalysis
                                 i++;
                             }
                         else
+                        {
                             while (i < (bmpOutput.Width - 200) / 120)
                             {
                                 fbVisual.drawActualNote(ref bmpOutput, notePredictedPrint[Idx], i);
                                 Idx++;
                                 i++;
                             }
+                        }
                     }
                     pictureBox1.Image = bmpOutput;
-                }                
+                }
+                else
+                {
+                    if (waveIn.notePredictList.Count > levelScrollBar.Value)
+                    {
+                        Bitmap bmpOutput = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+                        int Idx = levelScrollBar.Value;
+                        fbVisual.drawMusicNotation(ref bmpOutput, musicSheet, levelScrollBar.Value);
+                        int i = 0;
+                        if (waveIn.notePredictList.Count - levelScrollBar.Value <= (bmpOutput.Width - 200) / 120)
+                            while (i < waveIn.notePredictList.Count - levelScrollBar.Value)
+                            {
+                                fbVisual.drawActualNote(ref bmpOutput, waveIn.notePredictList[Idx], i);
+                                Idx++;
+                                i++;
+                            }
+                        else
+                        {
+                            while (i < (bmpOutput.Width - 200) / 120)
+                            {
+                                fbVisual.drawActualNote(ref bmpOutput, waveIn.notePredictList[Idx], i);
+                                Idx++;
+                                i++;
+                            }
+                        }
+
+                        pictureBox1.Image = bmpOutput;
+                    }
+                }
             }
         }
 
@@ -333,8 +363,32 @@ namespace WaveAnalysis
                             fbVisual.drawActualNote(ref pic, notePredictedPrint[Idx], Idx);
                             Idx++;
                         }
-                    pictureBox1.Image = pic;                
-                }                
+                    pictureBox1.Image = pic;
+                }
+                else
+                {
+                    if (waveIn.notePredictList.Count != 0)
+                    {
+                        Bitmap pic = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+                        levelScrollBar.Value = 0;
+                        levelScrollBar.Maximum = waveIn.notePredictList.Count - (pic.Width - 200) / 120;
+                        fbVisual.drawMusicNotation(ref pic, musicSheet, 0);
+                        int Idx = 0;
+                        if (waveIn.notePredictList.Count <= (pic.Width - 200) / 120)
+                            while (Idx < waveIn.notePredictList.Count)
+                            {
+                                fbVisual.drawActualNote(ref pic, waveIn.notePredictList[Idx], Idx);
+                                Idx++;
+                            }
+                        else
+                            while (Idx < (pic.Width - 200) / 120)
+                            {
+                                fbVisual.drawActualNote(ref pic, waveIn.notePredictList[Idx], Idx);
+                                Idx++;
+                            }
+                        pictureBox1.Image = pic;
+                    }
+                }
             }
         }
 
@@ -535,6 +589,7 @@ namespace WaveAnalysis
                 waveIn.DrawAudio(waveIn.leftData, pictureBox3);
                 frange =(int) (10000 / (waveIn.wavHeader.sampleRate / stftChunkSize)); // use for examine only freq band under 10000k
                 levelScrollBar.Maximum = 0;
+                tabControl1.SelectedIndex = 2;
                 //hard code to save time debugging, jump straight to spectrogram view
                 //tabControl1.SelectedIndex = 1;
             }
