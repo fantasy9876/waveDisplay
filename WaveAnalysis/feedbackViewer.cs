@@ -258,18 +258,58 @@ namespace WaveAnalysis
                 {
                     if (predictedNotes[i].NoteName[0] != XMLnotes[i].Name[0])
                     {
-                        
+
                         if (predictedNotes[i].NoteName[0] == XMLnotes[i + 1].Name[0])
-                        {                            
+                        {
                             WaveIn.notePredict notebuffer = new WaveIn.notePredict();
                             notebuffer.NoteName = "NaN";
                             notebuffer.octave = -1;
                             predictedNotes.Insert(i, notebuffer);
                         }
+                        else
+                        {                                                        
+                            string nameXMLnote=XMLnotes[i].Name;
+                            if (XMLnotes[i].alter == 1)
+                                nameXMLnote += "#";
+                            int idxPrednote = pitchLogval(predictedNotes[i].NoteName, predictedNotes[i].octave);
+                            int idxXMLnote = pitchLogval(nameXMLnote, XMLnotes[i].octave);
+                            var newPredNote = predictedNotes[i];
+                            newPredNote.percentage += 100 * (idxPrednote - idxXMLnote);
+                            predictedNotes.Insert(i, newPredNote);
+                            predictedNotes.RemoveAt(i + 1);
+                        }
                     }
                     i++;
                 }
             }
+        }
+        
+        private int pitchLogval(string pitchName, int octave)
+        {
+            int logVal = 0; ;
+            List<string> noteSequence = new List<string>() { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" };
+            logVal = noteSequence.IndexOf(pitchName);
+            switch (octave)
+            {
+                case 3:
+                    logVal -= 12;
+                    break;
+                case 5:
+                    logVal += 12;
+                    break;
+                case 6:
+                    logVal += 24;
+                    break;
+                case 7:
+                    logVal += 36;
+                    break;
+                case 8:
+                    logVal += 48;
+                    break;
+                default:
+                    break;
+            }
+            return logVal;
         }
     }    
 }
