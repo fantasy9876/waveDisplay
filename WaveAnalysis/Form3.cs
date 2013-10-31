@@ -29,8 +29,8 @@ namespace WaveAnalysis
         public List<float> fftGet(int noteIdx,ref float frate)
         {
             int[] timeIndex = new int[2];
-            timeIndex[0] = NoteList[noteIdx] * stftChunkSize / 2;
-            timeIndex[1] = NoteList[noteIdx + 1] * stftChunkSize / 2 + stftChunkSize;
+            timeIndex[0] = NoteList[noteIdx*2] * stftChunkSize / 2;
+            timeIndex[1] = NoteList[noteIdx*2 + 1] * stftChunkSize / 2 + stftChunkSize;
 
             List<short> octTimeData = wavedata.leftData.GetRange(timeIndex[0], (timeIndex[1] - timeIndex[0] + 1));
             //Pad data to make it 2^n count 
@@ -59,7 +59,7 @@ namespace WaveAnalysis
                 corrChart.Series["corrSeries"].Points.AddY((double)item);
             }
             List<float> octFFT = wavedata.FFT(octTimeData,false);
-            frate = (float)(wavedata.wavHeader.sampleRate) / (octFFT.Count * 2);
+            frate = (float)(wavedata.wavHeader.sampleRate) / (octFFT.Count);
             return octFFT;
         }
         private void Form3_Paint(object sender, PaintEventArgs e)
@@ -73,7 +73,7 @@ namespace WaveAnalysis
                 using (Graphics g = Graphics.FromImage(bmp))
                 {
                     drawNoteName(g, pictureBox1);
-                    for (int i = 0; i < data.Count; i++)
+                    for (int i = 0; i < data.Count/2; i++)
                     {
                         float freq = i * (44000 / (float)data.Count);
                         double logfreq = Math.Log(freq, 2) - Math.Log(440, 2) + 9.0 / 12;

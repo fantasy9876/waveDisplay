@@ -266,9 +266,13 @@ namespace WaveAnalysis
                             notebuffer.octave = -1;
                             predictedNotes.Insert(i, notebuffer);
                         }
+                        else if (i + 1 < predictedNotes.Count && predictedNotes[i + 1].NoteName[0] == XMLnotes[i].Name[0])
+                        {
+                            predictedNotes.RemoveAt(i);
+                        }
                         else
-                        {                                                        
-                            string nameXMLnote=XMLnotes[i].Name;
+                        {
+                            string nameXMLnote = XMLnotes[i].Name;
                             if (XMLnotes[i].alter == 1)
                                 nameXMLnote += "#";
                             int idxPrednote = pitchLogval(predictedNotes[i].NoteName, predictedNotes[i].octave);

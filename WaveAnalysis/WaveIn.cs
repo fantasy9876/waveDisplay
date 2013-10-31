@@ -37,9 +37,9 @@ namespace WaveAnalysis
             public byte[] fileFormat;
             public byte[] fmtID;
             public UInt16 audioFormat;
-            public UInt16 nChannels;
+            public UInt16 nChannels; // number of channels 
             public uint sampleRate;
-            public uint byteRate;
+            public uint byteRate; //number of byte transfer in second
             public UInt16 blockAlign;
             public UInt16 bitSample;
             public byte[] dataID;
@@ -83,11 +83,11 @@ namespace WaveAnalysis
                         wavHeader.nChannels = br.ReadUInt16();
                         wavHeader.sampleRate = br.ReadUInt32();
                         wavHeader.byteRate = br.ReadUInt32();
-                        wavHeader.blockAlign = br.ReadUInt16();
+                        wavHeader.blockAlign = br.ReadUInt16(); // number of bytes in one sample (may contains 2 channels)
                         wavHeader.bitSample = br.ReadUInt16();
                         wavHeader.dataID = br.ReadBytes(4);
                         wavHeader.dataSize = br.ReadUInt32();
-                        //assume the file read in has 16 bit per sample
+                        //read the data and stored in each channel
                         for (int i = 0; i < (wave_fs.Length - 44) / wavHeader.blockAlign; i++)
                         {
                             if (wavHeader.nChannels == 1)
@@ -112,11 +112,7 @@ namespace WaveAnalysis
                             }
                         }
 
-                    }
-                    string riff = Encoding.UTF8.GetString(wavHeader.riffID);
-                    string fmt = Encoding.UTF8.GetString(wavHeader.fmtID);
-                    string format = Encoding.UTF8.GetString(wavHeader.fileFormat);
-                    Console.WriteLine("wav File header " + riff + " " + format + " " + wavHeader.audioFormat.ToString());
+                    }                 
                 }
             }
 
@@ -274,6 +270,7 @@ namespace WaveAnalysis
 
                 stftWav.Add(fftChunk);
             }
+            //the last chunk is taken as the last No count of list
             fftChunktmp = FFT(inputValues.GetRange(count - No, No),true); ;
             fftChunk = fftChunktmp.GetRange(0, fftChunktmp.Count / 2);
             stftWav.Add(fftChunk);
@@ -282,7 +279,7 @@ namespace WaveAnalysis
             {
                
                 int fstart = (int)(1000 / (wavHeader.sampleRate / No));
-                int fend = (int)(3000 / (wavHeader.sampleRate / No));
+                int fend = (int)(5000 / (wavHeader.sampleRate / No));
                 List<double> tempList = new List<double>();
                 for (int k = fstart; k < fend; k++) //onset detection function focus on high frequency content
                 {
@@ -432,24 +429,24 @@ namespace WaveAnalysis
                     {
                         var window = spectroDiff.GetRange(a, minWindow);
                         //check to see if the max value is a peak
-                        var MaxIdx = window.IndexOf(window.Max());
+                        var MaxIdx = window.IndexOf(window.Max());                       
                         if (MaxIdx - 1 >= 0 && MaxIdx + 1 < window.Count)
                         {
-                            if (window[MaxIdx - 1] <= window[MaxIdx] && window[MaxIdx + 1] <= window[MaxIdx])
+                          
+                            if (window[MaxIdx - 1] < window[MaxIdx] && window[MaxIdx + 1] < window[MaxIdx])
                             {
-                                
                                 if (note.startIdx == -1)
-                                    note.startIdx = MaxIdx+a-2;
+                                    note.startIdx = MaxIdx + a - 2;
                                 else
-                                    note.endIdx = MaxIdx+a-2;
+                                    note.endIdx = MaxIdx + a - 2;
                                 if (note.startIdx != -1 && note.endIdx != -1)
                                 {
                                     noteMarkedList.Add(note);
-                                    note.startIdx = MaxIdx+a - 2;
+                                    note.startIdx = MaxIdx + a - 2;
                                     note.endIdx = -1;
                                 }
-                               
                             }
+                                                        
                         }
                     }
                     break;
@@ -457,7 +454,7 @@ namespace WaveAnalysis
                     break;
             }
             //remove all the note that have a chunk duration of 2/3 of window size and under
-            noteMarkedList.RemoveAll(item => item.endIdx - item.startIdx <=  2*minWindow / 3);
+            noteMarkedList.RemoveAll(item => item.endIdx - item.startIdx <=  2*minWindow/3 );
             return noteMarkedList;
         }
 
@@ -527,7 +524,7 @@ namespace WaveAnalysis
 
             int i = 0;
 
-            while (corrInput[i] > threshold)  //remove all of high correlation value at the beginning 
+            while (corrInput[i] > threshold)  //ignore all of first peak correlation value at the origin 
             {
                 if (i >= ((3.0f / 2) * sampleRate / 196))
                 {

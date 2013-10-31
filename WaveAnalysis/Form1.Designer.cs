@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -38,6 +38,7 @@
             this.editToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.undoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.clearMarksToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearAllNotesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.levelScrollBar = new System.Windows.Forms.HScrollBar();
             this.OpenFD = new System.Windows.Forms.OpenFileDialog();
             this.tabPage2 = new System.Windows.Forms.TabPage();
@@ -54,7 +55,6 @@
             this.pitchDetectionModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.spectralDifferenceModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.viewNote_but = new System.Windows.Forms.Button();
-            this.clearAllNotesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabPage2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
@@ -136,6 +136,13 @@
             this.clearMarksToolStripMenuItem.Text = "Clear Marks";
             this.clearMarksToolStripMenuItem.Click += new System.EventHandler(this.clearMarksToolStripMenuItem_Click);
             // 
+            // clearAllNotesToolStripMenuItem
+            // 
+            this.clearAllNotesToolStripMenuItem.Name = "clearAllNotesToolStripMenuItem";
+            this.clearAllNotesToolStripMenuItem.Size = new System.Drawing.Size(229, 28);
+            this.clearAllNotesToolStripMenuItem.Text = "Clear All Notes";
+            this.clearAllNotesToolStripMenuItem.Click += new System.EventHandler(this.clearAllNotesToolStripMenuItem_Click);
+            // 
             // levelScrollBar
             // 
             this.levelScrollBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
@@ -172,25 +179,25 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.chart1.BorderlineColor = System.Drawing.Color.Black;
             this.chart1.BorderlineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Solid;
-            chartArea2.AxisX.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.False;
-            chartArea2.AxisX.ScaleView.Zoomable = false;
-            chartArea2.AxisX.ScrollBar.Enabled = false;
-            chartArea2.AxisY.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.True;
-            chartArea2.AxisY.IsLabelAutoFit = false;
-            chartArea2.AxisY.IsMarginVisible = false;
-            chartArea2.AxisY.LabelStyle.Enabled = false;
-            chartArea2.AxisY.MajorGrid.LineColor = System.Drawing.Color.Gray;
-            chartArea2.AxisY.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dot;
-            chartArea2.AxisY.MajorTickMark.Enabled = false;
-            chartArea2.CursorX.IsUserEnabled = true;
-            chartArea2.CursorX.IsUserSelectionEnabled = true;
-            chartArea2.CursorY.IsUserEnabled = true;
-            chartArea2.CursorY.IsUserSelectionEnabled = true;
-            chartArea2.Name = "ChartArea1";
-            chartArea2.Position.Auto = false;
-            chartArea2.Position.Height = 100F;
-            chartArea2.Position.Width = 100F;
-            this.chart1.ChartAreas.Add(chartArea2);
+            chartArea1.AxisX.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.False;
+            chartArea1.AxisX.ScaleView.Zoomable = false;
+            chartArea1.AxisX.ScrollBar.Enabled = false;
+            chartArea1.AxisY.Enabled = System.Windows.Forms.DataVisualization.Charting.AxisEnabled.True;
+            chartArea1.AxisY.IsLabelAutoFit = false;
+            chartArea1.AxisY.IsMarginVisible = false;
+            chartArea1.AxisY.LabelStyle.Enabled = false;
+            chartArea1.AxisY.MajorGrid.LineColor = System.Drawing.Color.Gray;
+            chartArea1.AxisY.MajorGrid.LineDashStyle = System.Windows.Forms.DataVisualization.Charting.ChartDashStyle.Dot;
+            chartArea1.AxisY.MajorTickMark.Enabled = false;
+            chartArea1.CursorX.IsUserEnabled = true;
+            chartArea1.CursorX.IsUserSelectionEnabled = true;
+            chartArea1.CursorY.IsUserEnabled = true;
+            chartArea1.CursorY.IsUserSelectionEnabled = true;
+            chartArea1.Name = "ChartArea1";
+            chartArea1.Position.Auto = false;
+            chartArea1.Position.Height = 100F;
+            chartArea1.Position.Width = 100F;
+            this.chart1.ChartAreas.Add(chartArea1);
             this.chart1.Location = new System.Drawing.Point(3, 517);
             this.chart1.Name = "chart1";
             this.chart1.Size = new System.Drawing.Size(1402, 178);
@@ -329,13 +336,6 @@
             this.viewNote_but.Text = "View Notes";
             this.viewNote_but.UseVisualStyleBackColor = true;
             this.viewNote_but.Click += new System.EventHandler(this.viewNote_but_Click);
-            // 
-            // clearAllNotesToolStripMenuItem
-            // 
-            this.clearAllNotesToolStripMenuItem.Name = "clearAllNotesToolStripMenuItem";
-            this.clearAllNotesToolStripMenuItem.Size = new System.Drawing.Size(229, 28);
-            this.clearAllNotesToolStripMenuItem.Text = "Clear All Notes";
-            this.clearAllNotesToolStripMenuItem.Click += new System.EventHandler(this.clearAllNotesToolStripMenuItem_Click);
             // 
             // Form1
             // 

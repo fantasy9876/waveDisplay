@@ -708,6 +708,8 @@ namespace WaveAnalysis
         {
             if (noteList.Count == 1)
                 undoToolStripMenuItem.Enabled=false;
+            //remove two last marks
+            noteList.Remove(noteList.Last());
             noteList.Remove(noteList.Last());
             if (waveIn.notePredictList.Count > 0)
                 waveIn.notePredictList.RemoveAt(waveIn.notePredictList.Count - 1);

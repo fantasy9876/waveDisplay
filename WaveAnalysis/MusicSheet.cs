@@ -17,18 +17,18 @@ namespace WaveAnalysis
         public string fifthType;//1 for Major and 0 for Minor
         public short beat;
         public short beatType;
-        public int division; //the division of the music sheet
+        public int division; //the total division of the music sheet in a quater note 
 
         public struct Note
         {
-            public string Name;
-            public short alter;
-            public short octave;
-            public int duration;
-            public string type;
-            public bool isDot;
-            public string stemDirect;
-            public string beam;
+            public string Name; // name of the note or rest
+            public short alter; // 1 for sharpness, -1 for flatness, 0 if none provided
+            public short octave; // octave of the note
+            public int duration; // duration of beat, in form of multiple of division
+            public string type; //type of the note (quater, eight, whole, etc)
+            public bool isDot; // does the note contain dot
+            public string stemDirect; // direction of note stem up or down
+            public string beam;// single, double,etc beam connetor with other notes
         }
         public List<Note> NoteExtract=new List<Note>();
 
