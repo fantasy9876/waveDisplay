@@ -135,12 +135,13 @@ namespace WaveAnalysis
             using (Graphics g = Graphics.FromImage(bmp))
             {
                 g.Clear(Color.Black);
-                if (inputValues.Count >= 20000)
+                if (inputValues.Count >= 20000) //draw using integer points
                 {
                     List<short> inputNomalized = new List<short>();
                     inputNomalized = waveNormalize(inputValues, width, height);
                     for (int i = 0; i < (inputNomalized.Count) / 2 - 1; i++)
                     {
+                        //every 2 data are output at the same location 
                         g.DrawLine(new Pen(Color.Blue), new Point(i, inputNomalized[index] + height / 2), new Point(i, inputNomalized[index + 1] + height / 2));
                         index += 2;
                     }
@@ -148,7 +149,7 @@ namespace WaveAnalysis
                 }
                 else
                 {
-                    PointF previous = new PointF(0, height / 2);
+                    PointF previous = new PointF(0, height / 2); //draw waveform using floating point coordinates
                     for (int i = 0; i < inputValues.Count; i++)
                     {
                         float x = (float)(i * 1.0 * width / inputValues.Count);

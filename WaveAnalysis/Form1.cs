@@ -17,11 +17,9 @@ namespace WaveAnalysis
         public static WaveIn waveIn = new WaveIn();
         public static WaveIn waveZoom=new WaveIn();
         public static MusicSheet musicSheet = new MusicSheet();
-        public static int CurWavCount;
-        public static int CurSpectrCount;
-        public static int CurVerCount;
-        public static string waveFile = "",XMLFile="";
-        public static int XMLnoteIdx;
+        public static int CurWavCount; //current count is the total number of data needed toprint out to screen at a selected value of scrolling bar
+        public static int CurSpectrCount; //similar to CurwavCount except of spectrogram view
+        public static string waveFile = "",XMLFile=""; //store wavefile name/directory in 
         public static int[] chunkIndexRange=new int[2];
         public static bool viewed=false; // this is to ensure XML notes to be drawn only when at least a mark has been created
         public static int[] markChunk = { 0, 0 };
@@ -365,7 +363,7 @@ namespace WaveAnalysis
                         }
                     pictureBox1.Image = pic;
                 }
-                else
+                else //print only the recognizded notes on screen
                 {
                     if (waveIn.notePredictList.Count != 0)
                     {
@@ -630,10 +628,10 @@ namespace WaveAnalysis
             {
                 while (string.Compare(musicSheet.NoteExtract[XMLnoteIdx].Name, "rest") == 0)
                 {
-                    XMLnoteIdx++;
+                    XMLnoteIdx++;//skip comparing first rest notes in musicsheet with predict/recoginzed notes
                 }
                 if (index % 2 == 0)
-                    XMLnoteIdx += index / 2;
+                    XMLnoteIdx += index / 2; // 2 indices in notelist form 1 note to print out
                 else
                     XMLnoteIdx += (index + 1) / 2;
                 using (Graphics g = Graphics.FromImage(bmp))
@@ -672,11 +670,11 @@ namespace WaveAnalysis
                 octForm.isXML = true;
                 while (string.Compare(musicSheet.NoteExtract[index].Name, "rest") == 0)
                 {
-                    index++;
+                    index++; // skip first few rest notes in music sheet
                 }
                 for (int i = index; i < musicSheet.NoteExtract.Count;i++ )
                 {
-                    octForm.NoteXML.Add(musicSheet.NoteExtract[i].Name);
+                    octForm.NoteXML.Add(musicSheet.NoteExtract[i].Name); //copy list of notes, ignore the first rest notes in music sheet
                 }
             }
             octForm.Show();
@@ -749,6 +747,7 @@ namespace WaveAnalysis
             int minWindows = (int)Math.Abs((chart1.ChartAreas[0].CursorX.SelectionEnd - chart1.ChartAreas[0].CursorX.SelectionStart));
             List<WaveIn.noteInterval> onSetNotes = waveIn.onSetDetect(stftChunkSize, WaveIn.onsetDetectMode.PitchDetection, minWindows);
             noteList.Clear();
+            //put all of note interval structs data into one list, each note interval struct result 2 points in noteList 
             foreach (WaveIn.noteInterval item in onSetNotes)
             {
                 noteList.Add(item.startIdx);
